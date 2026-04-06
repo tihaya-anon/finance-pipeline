@@ -9,6 +9,7 @@ mkdir -p artifacts
 uv --directory app sync --group dev
 docker compose up -d --build redpanda redpanda-console questdb grafana jobmanager taskmanager
 ./scripts/wait_for_infra.sh
+./scripts/wait_for_questdb.sh
 ./scripts/create_topics.sh
 
 docker compose exec -T jobmanager /bin/bash -lc "/opt/flink/bin/sql-client.sh -f /opt/flink/sql/market_features.sql" \

@@ -16,7 +16,7 @@
         {
           "datasource": { "type": "postgres", "uid": "questdb" },
           "editorType": "sql",
-          "format": 1,
+          "format": "time_series",
           "rawSql": "SELECT timestamp AS time, avg_price, symbol FROM market_features WHERE $__timeFilter(timestamp) ORDER BY time",
           "refId": "A"
         }
@@ -34,7 +34,7 @@
         {
           "datasource": { "type": "postgres", "uid": "questdb" },
           "editorType": "sql",
-          "format": 1,
+          "format": "time_series",
           "rawSql": "SELECT timestamp AS time, price_return, symbol FROM market_features WHERE $__timeFilter(timestamp) ORDER BY time",
           "refId": "A"
         }
@@ -52,7 +52,7 @@
         {
           "datasource": { "type": "postgres", "uid": "questdb" },
           "editorType": "sql",
-          "format": 1,
+          "format": "time_series",
           "rawSql": "SELECT timestamp AS time, total_quantity, symbol FROM market_features WHERE $__timeFilter(timestamp) ORDER BY time",
           "refId": "A"
         }
@@ -70,7 +70,7 @@
         {
           "datasource": { "type": "postgres", "uid": "questdb" },
           "editorType": "sql",
-          "format": 1,
+          "format": "time_series",
           "rawSql": "SELECT timestamp AS time, equity, symbol FROM portfolio_snapshots WHERE $__timeFilter(timestamp) ORDER BY time",
           "refId": "A"
         }
@@ -88,7 +88,7 @@
         {
           "datasource": { "type": "postgres", "uid": "questdb" },
           "editorType": "sql",
-          "format": 0,
+          "format": "table",
           "rawSql": "SELECT timestamp, symbol, target_position, price_return, reason, window_end FROM trade_signals WHERE $__timeFilter(timestamp) ORDER BY timestamp DESC LIMIT 20",
           "refId": "A"
         }

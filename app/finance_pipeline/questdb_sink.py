@@ -16,6 +16,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--port", type=int, default=9009)
     parser.add_argument("--group-id", default="questdb-sink")
     parser.add_argument("--max-messages", type=int, default=0)
+    parser.add_argument("--connect-retries", type=int, default=30)
+    parser.add_argument("--connect-backoff-seconds", type=float, default=2.0)
     return parser.parse_args()
 
 
@@ -91,10 +93,25 @@ def main() -> None:
         group_id=args.group_id,
         consumer_timeout_ms=SETTINGS.consumer_timeout_ms,
     )
-    connection = socket.create_connection((args.host, args.port), timeout=10)
+    connection: socket.socket | None = None
     processed = 0
 
     try:
+        for attempt in range(1, args.connect_retries + 1):
+            try:
+                connection = socket.create_connection((args.host, args.port), timeout=10)
+                break
+            except OSError as exc:
+                if attempt == args.connect_retries:
+                    raise
+                print(
+                    f"questdb sink connect retry {attempt}/{args.connect_retries}: "
+                    f"{exc}; sleeping {args.connect_backoff_seconds:.1f}s"
+                )
+                time.sleep(args.connect_backoff_seconds)
+
+        assert connection is not None
+
         while args.max_messages <= 0 or processed < args.max_messages:
             records = consumer.poll(timeout_ms=SETTINGS.consumer_timeout_ms)
             if not records:
@@ -119,7 +136,8 @@ def main() -> None:
                 if args.max_messages > 0 and processed >= args.max_messages:
                     break
     finally:
-        connection.close()
+        if connection is not None:
+            connection.close()
         consumer.close()
 
 
