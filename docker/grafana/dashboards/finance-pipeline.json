@@ -1,0 +1,112 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "postgres", "uid": "questdb" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "questdb" },
+          "editorType": "sql",
+          "format": 1,
+          "rawSql": "SELECT timestamp AS time, avg_price, symbol FROM market_features WHERE $__timeFilter(timestamp) ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Average Price",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "questdb" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "questdb" },
+          "editorType": "sql",
+          "format": 1,
+          "rawSql": "SELECT timestamp AS time, price_return, symbol FROM market_features WHERE $__timeFilter(timestamp) ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Window Return",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "questdb" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "questdb" },
+          "editorType": "sql",
+          "format": 1,
+          "rawSql": "SELECT timestamp AS time, total_quantity, symbol FROM market_features WHERE $__timeFilter(timestamp) ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Quantity",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "questdb" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "id": 4,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "questdb" },
+          "editorType": "sql",
+          "format": 1,
+          "rawSql": "SELECT timestamp AS time, equity, symbol FROM portfolio_snapshots WHERE $__timeFilter(timestamp) ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Portfolio Equity",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "questdb" },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 16 },
+      "id": 5,
+      "options": { "showHeader": true },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "questdb" },
+          "editorType": "sql",
+          "format": 0,
+          "rawSql": "SELECT timestamp, symbol, target_position, price_return, reason, window_end FROM trade_signals WHERE $__timeFilter(timestamp) ORDER BY timestamp DESC LIMIT 20",
+          "refId": "A"
+        }
+      ],
+      "title": "Recent Signals",
+      "type": "table"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["finance", "streaming", "questdb"],
+  "templating": { "list": [] },
+  "time": { "from": "now-15m", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Finance Pipeline",
+  "uid": "finance-pipeline",
+  "version": 1,
+  "weekStart": ""
+}

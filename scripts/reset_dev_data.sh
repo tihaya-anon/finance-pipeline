@@ -12,4 +12,8 @@ done
 rm -f artifacts/*.jsonl artifacts/*.log
 touch artifacts/.gitkeep
 
+for table in portfolio_snapshots trade_signals market_features; do
+  curl -fsS -G --data-urlencode "query=DROP TABLE IF EXISTS ${table}" "http://127.0.0.1:9000/exec" >/dev/null 2>&1 || true
+done
+
 echo "Development topics and artifacts reset."

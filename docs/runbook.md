@@ -27,14 +27,15 @@ uv --directory app run pytest
 这个模式会：
 
 - 启动 Redpanda 和 Flink
+- 启动 Redpanda Console、QuestDB、Grafana
 - 提交 Flink SQL 作业
-- 常驻启动 strategy / portfolio / dashboard 服务
+- 常驻启动 strategy / portfolio / questdb-sink 服务
 
 可视化地址：
 
-```bash
-http://127.0.0.1:8100
-```
+- Redpanda Console: `http://127.0.0.1:8080`
+- Grafana: `http://127.0.0.1:3000`
+- QuestDB: `http://127.0.0.1:9000`
 
 推样例数据：
 
@@ -78,7 +79,7 @@ docker compose down
 ```bash
 pkill -f "uv --directory app run strategy-service"
 pkill -f "uv --directory app run portfolio-service"
-pkill -f "uv --directory app run dashboard-service"
+pkill -f "uv --directory app run questdb-sink"
 ```
 
 ## Data Retention

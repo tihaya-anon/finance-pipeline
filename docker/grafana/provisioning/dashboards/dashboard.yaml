@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: Finance Pipeline
+    orgId: 1
+    folder: Finance Pipeline
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    options:
+      path: /var/lib/grafana/dashboards

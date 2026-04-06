@@ -9,9 +9,7 @@ description = "MVP crypto market data pipeline with Kafka, Flink SQL, and simple
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-  "fastapi>=0.115.12,<1.0.0",
   "kafka-python>=2.2.15,<3.0.0",
-  "uvicorn>=0.34.0,<1.0.0",
   "websockets>=15.0.1,<16.0.0",
 ]
 
@@ -24,8 +22,8 @@ dev = [
 replay-market = "finance_pipeline.replay:main"
 strategy-service = "finance_pipeline.strategy_service:main"
 portfolio-service = "finance_pipeline.portfolio_service:main"
-dashboard-service = "finance_pipeline.dashboard_service:main"
 stream-binance = "finance_pipeline.binance_source:main"
+questdb-sink = "finance_pipeline.questdb_sink:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
