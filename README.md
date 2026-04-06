@@ -46,20 +46,20 @@ artifacts/              运行结果输出
 先同步依赖并跑测试：
 
 ```bash
-uv --directory app sync --group dev
-uv --directory app run pytest
+make install
+make test
 ```
 
 启动完整 MVP：
 
 ```bash
-./scripts/run_mvp.sh
+make mvp
 ```
 
 启动常驻开发栈和可视化：
 
 ```bash
-./scripts/start_dev_stack.sh
+make dev
 ```
 
 常用入口：
@@ -78,19 +78,19 @@ cat artifacts/portfolio.jsonl
 接 Binance 实时公开数据：
 
 ```bash
-uv --directory app run stream-binance
+make binance
 ```
 
 停止基础设施：
 
 ```bash
-./scripts/stop_stack.sh
+make stop
 ```
 
 彻底重置栈和本地运行产物：
 
 ```bash
-./scripts/reset_stack.sh
+make reset
 ```
 
 ## 运行说明
@@ -104,6 +104,7 @@ uv --directory app run stream-binance
 - Python 依赖和锁文件都位于 `app/`
 - 组合快照会额外写入 Kafka topic `portfolio_snapshots`
 - Grafana 默认会自动加载 `Finance Pipeline` dashboard
+- 常用入口都收在 `Makefile`
 
 ## 文档
 
