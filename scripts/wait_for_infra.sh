@@ -10,7 +10,7 @@ until docker compose exec -T redpanda rpk cluster info >/dev/null 2>&1; do
 done
 
 echo "waiting for Flink JobManager..."
-until curl -fsS "http://localhost:8081/overview" >/dev/null 2>&1; do
+until curl -fsS "http://localhost:${HOST_FLINK_PORT:-8081}/overview" >/dev/null 2>&1; do
   sleep 2
 done
 

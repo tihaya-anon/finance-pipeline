@@ -26,8 +26,8 @@ nohup uv --directory app run portfolio-service --max-messages 0 > artifacts/port
 nohup uv --directory app run questdb-sink --max-messages 0 > artifacts/questdb-sink.log 2>&1 &
 
 echo "Dev stack is ready."
-echo "Redpanda Console: http://127.0.0.1:8080"
-echo "Grafana: http://127.0.0.1:3000"
-echo "QuestDB Web Console: http://127.0.0.1:9000"
+echo "Redpanda Console: http://127.0.0.1:${HOST_CONSOLE_PORT:-8080}"
+echo "Grafana: http://127.0.0.1:${HOST_GRAFANA_PORT:-3000}"
+echo "QuestDB Web Console: http://127.0.0.1:${HOST_QUESTDB_HTTP_PORT:-9000}"
 echo "Replay sample data with: uv --directory app run replay-market --speedup 50"
 echo "Stream live Binance data with: uv --directory app run stream-binance"

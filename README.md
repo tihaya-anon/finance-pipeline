@@ -64,9 +64,9 @@ uv --directory app run pytest
 
 常用入口：
 
-- Redpanda Console: `http://127.0.0.1:8080`
-- Grafana: `http://127.0.0.1:3000`
-- QuestDB Web Console: `http://127.0.0.1:9000`
+- Redpanda Console: `http://127.0.0.1:${HOST_CONSOLE_PORT:-8080}`
+- Grafana: `http://127.0.0.1:${HOST_GRAFANA_PORT:-3000}`
+- QuestDB Web Console: `http://127.0.0.1:${HOST_QUESTDB_HTTP_PORT:-9000}`
 
 查看结果：
 
@@ -84,14 +84,21 @@ uv --directory app run stream-binance
 停止基础设施：
 
 ```bash
-docker compose down
+./scripts/stop_stack.sh
+```
+
+彻底重置栈和本地运行产物：
+
+```bash
+./scripts/reset_stack.sh
 ```
 
 ## 运行说明
 
 - Kafka 对宿主机默认暴露为 `localhost:39092`
-- 如果端口冲突，启动前设置 `HOST_KAFKA_PORT=49092` 这类环境变量即可
-- Flink Web UI 为 `http://localhost:8081`
+- 如果端口冲突，启动前设置环境变量即可，例如：
+  `HOST_KAFKA_PORT=49092 HOST_QUESTDB_HTTP_PORT=19000 ./scripts/start_dev_stack.sh`
+- Flink Web UI 为 `http://localhost:${HOST_FLINK_PORT:-8081}`
 - Flink SQL 作业定义在 `sql/market_features.sql`
 - 示例数据覆盖 6 个 5 秒窗口，脚本默认消费 6 条特征和 6 条信号
 - Python 依赖和锁文件都位于 `app/`

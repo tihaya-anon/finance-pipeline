@@ -33,9 +33,9 @@ uv --directory app run pytest
 
 可视化地址：
 
-- Redpanda Console: `http://127.0.0.1:8080`
-- Grafana: `http://127.0.0.1:3000`
-- QuestDB: `http://127.0.0.1:9000`
+- Redpanda Console: `http://127.0.0.1:${HOST_CONSOLE_PORT:-8080}`
+- Grafana: `http://127.0.0.1:${HOST_GRAFANA_PORT:-3000}`
+- QuestDB: `http://127.0.0.1:${HOST_QUESTDB_HTTP_PORT:-9000}`
 
 推样例数据：
 
@@ -52,12 +52,24 @@ uv --directory app run stream-binance
 默认暴露：
 
 - Kafka: `localhost:39092`
-- Flink UI: `http://localhost:8081`
+- Flink UI: `http://localhost:${HOST_FLINK_PORT:-8081}`
+- Redpanda Console: `localhost:${HOST_CONSOLE_PORT:-8080}`
+- QuestDB HTTP: `localhost:${HOST_QUESTDB_HTTP_PORT:-9000}`
+- QuestDB ILP: `localhost:${HOST_QUESTDB_ILP_PORT:-9009}`
+- QuestDB PGWire: `localhost:${HOST_QUESTDB_PG_PORT:-8812}`
+- Grafana: `localhost:${HOST_GRAFANA_PORT:-3000}`
 
-如果 `39092` 冲突：
+如果端口冲突：
 
 ```bash
-HOST_KAFKA_PORT=49092 ./scripts/run_mvp.sh
+HOST_KAFKA_PORT=49092 \
+HOST_CONSOLE_PORT=18080 \
+HOST_QUESTDB_HTTP_PORT=19000 \
+HOST_QUESTDB_ILP_PORT=19009 \
+HOST_QUESTDB_PG_PORT=18812 \
+HOST_GRAFANA_PORT=13000 \
+HOST_FLINK_PORT=18081 \
+./scripts/start_dev_stack.sh
 ```
 
 ## Outputs
@@ -71,7 +83,13 @@ HOST_KAFKA_PORT=49092 ./scripts/run_mvp.sh
 ## Shutdown
 
 ```bash
-docker compose down
+./scripts/stop_stack.sh
+```
+
+## Full Reset
+
+```bash
+./scripts/reset_stack.sh
 ```
 
 如果还启动了本地后台 Python 服务：

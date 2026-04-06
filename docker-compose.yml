@@ -20,23 +20,23 @@ services:
       - PLAINTEXT://redpanda:9092,OUTSIDE://localhost:${HOST_KAFKA_PORT:-39092}
     ports:
       - "${HOST_KAFKA_PORT:-39092}:${HOST_KAFKA_PORT:-39092}"
-      - "9644:9644"
+      - "${HOST_REDPANDA_ADMIN_PORT:-9644}:9644"
 
   redpanda-console:
     image: docker.redpanda.com/redpandadata/console:v2.8.2
     environment:
       KAFKA_BROKERS: redpanda:9092
     ports:
-      - "8080:8080"
+      - "${HOST_CONSOLE_PORT:-8080}:8080"
     depends_on:
       - redpanda
 
   questdb:
     image: questdb/questdb:8.3.3
     ports:
-      - "9000:9000"
-      - "9009:9009"
-      - "8812:8812"
+      - "${HOST_QUESTDB_HTTP_PORT:-9000}:9000"
+      - "${HOST_QUESTDB_ILP_PORT:-9009}:9009"
+      - "${HOST_QUESTDB_PG_PORT:-8812}:8812"
 
   grafana:
     image: grafana/grafana-oss:11.5.2
@@ -45,7 +45,7 @@ services:
       GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
       GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/finance-pipeline.json
     ports:
-      - "3000:3000"
+      - "${HOST_GRAFANA_PORT:-3000}:3000"
     volumes:
       - ./docker/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
       - ./docker/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
@@ -62,7 +62,7 @@ services:
     environment:
       JOB_MANAGER_RPC_ADDRESS: jobmanager
     ports:
-      - "8081:8081"
+      - "${HOST_FLINK_PORT:-8081}:8081"
     depends_on:
       - redpanda
 
