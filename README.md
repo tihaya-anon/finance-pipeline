@@ -86,6 +86,19 @@ cat artifacts/portfolio.jsonl
 make binance
 ```
 
+接 EVM 链上 swap 数据：
+
+```bash
+make onchain \
+  EVM_WS_URL=wss://your-node.example/ws \
+  EVM_HTTP_URL=https://your-node.example/http \
+  EVM_PAIR_ADDRESS=0xYourPairAddress \
+  EVM_BASE_SYMBOL=ETH \
+  EVM_QUOTE_SYMBOL=USDC \
+  EVM_BASE_DECIMALS=18 \
+  EVM_QUOTE_DECIMALS=6
+```
+
 停止基础设施：
 
 ```bash
@@ -113,6 +126,7 @@ make reset
 - 组合快照会额外写入 Kafka topic `portfolio_snapshots`
 - Grafana 默认会自动加载 `Finance Pipeline` dashboard
 - QuestDB 表结构会在启动时自动初始化；如果还没回放或接入实时数据，Grafana 会显示空图而不是报表不存在
+- `make onchain` 当前按 Uniswap V2 风格 `Swap` 事件把链上成交映射为 `market_ticks`
 - 如果需要更短或更长的保留时间，可覆盖例如 `make dev DEV_TOPIC_RETENTION_MS=900000 DEV_QUESTDB_TTL='2 HOURS'`
 - 常用入口都收在 `Makefile`
 

@@ -23,6 +23,7 @@ replay-market = "finance_pipeline.replay:main"
 strategy-service = "finance_pipeline.strategy_service:main"
 portfolio-service = "finance_pipeline.portfolio_service:main"
 stream-binance = "finance_pipeline.binance_source:main"
+stream-onchain = "finance_pipeline.onchain_source:main"
 questdb-sink = "finance_pipeline.questdb_sink:main"
 
 [tool.setuptools.packages.find]

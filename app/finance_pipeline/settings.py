@@ -26,6 +26,13 @@ class PipelineSettings:
         "BINANCE_STREAM_URL",
         "wss://data-stream.binance.vision/ws/btcusdt@aggTrade",
     )
+    evm_ws_url: str = os.getenv("EVM_WS_URL", "")
+    evm_http_url: str = os.getenv("EVM_HTTP_URL", "")
+    evm_pair_address: str = os.getenv("EVM_PAIR_ADDRESS", "")
+    evm_base_symbol: str = os.getenv("EVM_BASE_SYMBOL", "")
+    evm_quote_symbol: str = os.getenv("EVM_QUOTE_SYMBOL", "")
+    evm_base_decimals: int = int(os.getenv("EVM_BASE_DECIMALS", "18"))
+    evm_quote_decimals: int = int(os.getenv("EVM_QUOTE_DECIMALS", "6"))
 
 
 SETTINGS = PipelineSettings()

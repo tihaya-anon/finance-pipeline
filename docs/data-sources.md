@@ -45,3 +45,30 @@ Binance 官方文档说明：
 
 - Connect: https://bybit-exchange.github.io/docs/v5/ws/connect
 - Public Trade: https://bybit-exchange.github.io/docs/v5/websocket/public/trade
+
+## On-Chain Next Step
+
+仓库现在也支持直接接 EVM AMM `Swap` 日志：
+
+- 入口：`make onchain`
+- 当前解码模型：Uniswap V2 风格 pair `Swap` 事件
+- 输出方式：把链上 swap 统一映射成现有 `market_ticks` schema，后续 Flink / strategy / QuestDB / Grafana 复用原链路
+
+最小配置：
+
+```bash
+make onchain \
+  EVM_WS_URL=wss://your-node.example/ws \
+  EVM_HTTP_URL=https://your-node.example/http \
+  EVM_PAIR_ADDRESS=0xYourPairAddress \
+  EVM_BASE_SYMBOL=ETH \
+  EVM_QUOTE_SYMBOL=USDC \
+  EVM_BASE_DECIMALS=18 \
+  EVM_QUOTE_DECIMALS=6
+```
+
+当前限制：
+
+- 只支持单个 pair
+- 只支持 Uniswap V2 风格 `Swap(address,uint256,uint256,uint256,uint256,address)`
+- 价格默认按 `token0/token1` 中的 `base/quote` 方向计算

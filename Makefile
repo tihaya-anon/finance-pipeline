@@ -26,7 +26,7 @@ export KAFKA_BOOTSTRAP_SERVERS
 export DEV_TOPIC_RETENTION_MS
 export DEV_QUESTDB_TTL
 
-.PHONY: help install test mvp dev docker stop reset clean-data retention replay replay-fast binance compose-config ports
+.PHONY: help install test mvp dev docker stop reset clean-data retention replay replay-fast binance onchain compose-config ports
 
 help:
 	@echo "Targets:"
@@ -42,6 +42,7 @@ help:
 	@echo "  make replay        - replay sample data"
 	@echo "  make replay-fast   - replay sample data faster"
 	@echo "  make binance       - stream live Binance aggTrade data"
+	@echo "  make onchain       - stream EVM AMM swap logs into Kafka"
 	@echo "  make compose-config- print docker compose config with active ports"
 	@echo "  make ports         - show current host port mapping values"
 	@echo ""
@@ -85,6 +86,9 @@ replay-fast:
 
 binance:
 	uv --directory app run stream-binance
+
+onchain:
+	uv --directory app run stream-onchain
 
 compose-config:
 	docker compose config
