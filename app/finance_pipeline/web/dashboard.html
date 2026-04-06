@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finance Pipeline Dashboard</title>
+  <style>
+    :root {
+      --bg: #08131c;
+      --panel: #102432;
+      --text: #e8f1f2;
+      --muted: #8db1bd;
+      --accent: #3dd9b0;
+      --accent-2: #f5b841;
+      --accent-3: #71a7ff;
+      --danger: #ff7f6f;
+      --border: rgba(141, 177, 189, 0.18);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(61, 217, 176, 0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(113, 167, 255, 0.15), transparent 35%),
+        linear-gradient(180deg, #09141d 0%, #061018 100%);
+      color: var(--text);
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+    }
+    .shell { padding: 24px; display: grid; gap: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: end; gap: 16px; }
+    .headline { font-size: 30px; font-weight: 700; letter-spacing: 0.04em; margin: 0; }
+    .subhead { margin: 8px 0 0; color: var(--muted); }
+    .status {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(16, 36, 50, 0.85);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 20px; }
+    .card {
+      background: rgba(16, 36, 50, 0.88);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+    }
+    .metric { grid-column: span 3; }
+    .chart-card { grid-column: span 6; min-height: 280px; }
+    .table-card { grid-column: span 12; }
+    .metric-label { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .metric-value { margin-top: 10px; font-size: 34px; font-weight: 700; }
+    .metric-footnote { margin-top: 8px; color: var(--muted); font-size: 13px; }
+    .card-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 15px; font-weight: 600; text-transform: uppercase; }
+    .chip { color: var(--muted); font-size: 12px; }
+    canvas {
+      width: 100%;
+      height: 210px;
+      display: block;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(8, 19, 28, 0.35), rgba(8, 19, 28, 0.7));
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 12px 10px; text-align: left; border-top: 1px solid rgba(141, 177, 189, 0.12); }
+    th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+    .pos-long { color: var(--accent); }
+    .pos-flat { color: var(--accent-2); }
+    .pos-short { color: var(--danger); }
+    @media (max-width: 960px) {
+      .metric, .chart-card, .table-card { grid-column: span 12; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="header">
+      <div>
+        <h1 class="headline">Finance Pipeline Dashboard</h1>
+        <p class="subhead">Live feature windows, signal transitions, and portfolio snapshots from the local Kafka/Flink pipeline.</p>
+      </div>
+      <div class="status" id="status">Waiting for data</div>
+    </section>
+    <section class="grid">
+      <article class="card metric">
+        <div class="metric-label">Feature Windows</div>
+        <div class="metric-value" id="feature-count">0</div>
+        <div class="metric-footnote" id="latest-return">Latest return: n/a</div>
+      </article>
+      <article class="card metric">
+        <div class="metric-label">Signals</div>
+        <div class="metric-value" id="signal-count">0</div>
+        <div class="metric-footnote" id="latest-signal">Latest signal: n/a</div>
+      </article>
+      <article class="card metric">
+        <div class="metric-label">Portfolio Snapshots</div>
+        <div class="metric-value" id="portfolio-count">0</div>
+        <div class="metric-footnote" id="latest-equity">Equity: n/a</div>
+      </article>
+      <article class="card metric">
+        <div class="metric-label">Current Position</div>
+        <div class="metric-value" id="current-position">0</div>
+        <div class="metric-footnote" id="current-cash">Cash: n/a</div>
+      </article>
+      <article class="card chart-card">
+        <div class="card-title"><span>Average Price</span><span class="chip">window avg</span></div>
+        <canvas id="price-chart" width="800" height="260"></canvas>
+      </article>
+      <article class="card chart-card">
+        <div class="card-title"><span>Price Return</span><span class="chip">window change</span></div>
+        <canvas id="return-chart" width="800" height="260"></canvas>
+      </article>
+      <article class="card chart-card">
+        <div class="card-title"><span>Total Quantity</span><span class="chip">per window</span></div>
+        <canvas id="quantity-chart" width="800" height="260"></canvas>
+      </article>
+      <article class="card chart-card">
+        <div class="card-title"><span>Portfolio Equity</span><span class="chip">mark-to-market</span></div>
+        <canvas id="equity-chart" width="800" height="260"></canvas>
+      </article>
+      <article class="card table-card">
+        <div class="card-title"><span>Recent Signals</span><span class="chip">latest first</span></div>
+        <table>
+          <thead>
+            <tr><th>Window End</th><th>Symbol</th><th>Target</th><th>Return</th><th>Reason</th></tr>
+          </thead>
+          <tbody id="signals-table"></tbody>
+        </table>
+      </article>
+    </section>
+  </main>
+  <script>
+    const palette = { teal: "#3dd9b0", amber: "#f5b841", blue: "#71a7ff", red: "#ff7f6f", grid: "rgba(141, 177, 189, 0.16)", muted: "#8db1bd" };
+    function formatNumber(value, digits = 3) {
+      if (value === null || value === undefined || Number.isNaN(Number(value))) return "n/a";
+      return Number(value).toFixed(digits);
+    }
+    function drawLineChart(canvasId, points, color, formatter) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext("2d");
+      const width = canvas.width;
+      const height = canvas.height;
+      const padding = { top: 18, right: 18, bottom: 28, left: 44 };
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "rgba(8, 19, 28, 0.55)";
+      ctx.fillRect(0, 0, width, height);
+      if (!points.length) {
+        ctx.fillStyle = palette.muted;
+        ctx.font = "14px IBM Plex Sans";
+        ctx.fillText("No data yet", padding.left, height / 2);
+        return;
+      }
+      const values = points.map((point) => point.value);
+      let min = Math.min(...values);
+      let max = Math.max(...values);
+      if (min === max) { min -= 1; max += 1; }
+      const chartWidth = width - padding.left - padding.right;
+      const chartHeight = height - padding.top - padding.bottom;
+      ctx.strokeStyle = palette.grid;
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 4; i += 1) {
+        const y = padding.top + (chartHeight / 3) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, y);
+        ctx.lineTo(width - padding.right, y);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      points.forEach((point, index) => {
+        const x = padding.left + (chartWidth * index) / Math.max(points.length - 1, 1);
+        const y = padding.top + chartHeight - ((point.value - min) / (max - min)) * chartHeight;
+        if (index === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      ctx.fillStyle = color;
+      points.forEach((point, index) => {
+        const x = padding.left + (chartWidth * index) / Math.max(points.length - 1, 1);
+        const y = padding.top + chartHeight - ((point.value - min) / (max - min)) * chartHeight;
+        ctx.beginPath();
+        ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.fillStyle = palette.muted;
+      ctx.font = "12px IBM Plex Sans";
+      ctx.fillText(formatter(max), 8, padding.top + 4);
+      ctx.fillText(formatter(min), 8, padding.top + chartHeight);
+      ctx.fillText(points[0].label, padding.left, height - 6);
+      ctx.fillText(points[points.length - 1].label, width - padding.right - 60, height - 6);
+    }
+    function toChartPoints(items, valueKey) {
+      return items.map((item) => ({ label: (item.window_end || item.timestamp).slice(11, 16), value: Number(item[valueKey]) }));
+    }
+    function renderSignalsTable(signals) {
+      const table = document.getElementById("signals-table");
+      table.innerHTML = "";
+      signals.slice().reverse().slice(0, 12).forEach((signal) => {
+        const row = document.createElement("tr");
+        const targetClass = signal.target_position > 0 ? "pos-long" : signal.target_position < 0 ? "pos-short" : "pos-flat";
+        row.innerHTML = `<td>${signal.window_end.replace("T", " ").replace(".000Z", "Z")}</td><td>${signal.symbol}</td><td class="${targetClass}">${signal.target_position}</td><td>${formatNumber(signal.price_return, 5)}</td><td>${signal.reason}</td>`;
+        table.appendChild(row);
+      });
+    }
+    async function refresh() {
+      const response = await fetch("/api/state", { cache: "no-store" });
+      const payload = await response.json();
+      document.getElementById("status").textContent = `Updated ${new Date().toLocaleTimeString()}`;
+      document.getElementById("feature-count").textContent = payload.feature_count;
+      document.getElementById("signal-count").textContent = payload.signal_count;
+      document.getElementById("portfolio-count").textContent = payload.snapshot_count;
+      const latestFeature = payload.latest_feature;
+      const latestSignal = payload.latest_signal;
+      const latestPortfolio = payload.latest_portfolio;
+      document.getElementById("latest-return").textContent = latestFeature ? `Latest return: ${formatNumber(latestFeature.price_return, 5)}` : "Latest return: n/a";
+      document.getElementById("latest-signal").textContent = latestSignal ? `Latest signal: ${latestSignal.reason} (${latestSignal.target_position})` : "Latest signal: n/a";
+      document.getElementById("latest-equity").textContent = latestPortfolio ? `Equity: ${formatNumber(latestPortfolio.equity, 2)}` : "Equity: n/a";
+      document.getElementById("current-position").textContent = latestPortfolio ? latestPortfolio.current_position : "0";
+      document.getElementById("current-cash").textContent = latestPortfolio ? `Cash: ${formatNumber(latestPortfolio.cash, 2)}` : "Cash: n/a";
+      drawLineChart("price-chart", toChartPoints(payload.recent_features, "avg_price"), palette.teal, (value) => formatNumber(value, 2));
+      drawLineChart("return-chart", toChartPoints(payload.recent_features, "price_return"), palette.amber, (value) => formatNumber(value, 5));
+      drawLineChart("quantity-chart", toChartPoints(payload.recent_features, "total_quantity"), palette.blue, (value) => formatNumber(value, 3));
+      drawLineChart("equity-chart", toChartPoints(payload.recent_portfolio, "equity"), palette.red, (value) => formatNumber(value, 2));
+      renderSignalsTable(payload.recent_signals);
+    }
+    async function loop() {
+      try { await refresh(); } catch (error) { document.getElementById("status").textContent = `Dashboard fetch failed: ${error}`; }
+      setTimeout(loop, 2000);
+    }
+    loop();
+  </script>
+</body>
+</html>

@@ -9,7 +9,8 @@
 1. `replay-market` 把样例 tick 数据回放到 `market_ticks`
 2. Flink SQL 对 `market_ticks` 做 5 秒窗口聚合，写入 `market_features`
 3. `strategy-service` 消费特征并生成信号，写入 `trade_signals`
-4. `portfolio-service` 消费信号并产出账户快照
+4. `portfolio-service` 消费信号并产出账户快照，写入 `portfolio_snapshots`
+5. `dashboard-service` 同时消费三个结果 topic，做本地实时可视化
 
 ## Layout
 
@@ -39,3 +40,14 @@
 - 便于快速试错
 - 逻辑清晰，和流式计算层解耦
 - 后面可替换为更真实的 execution/risk service
+
+### 为什么 dashboard 不直接上 Grafana
+
+- 当前没有单独的时序库，直接上 Grafana 还要补存储层
+- MVP 目标是先可视化“链路是否活着”，而不是先做观测平台
+- 本地 dashboard 直接消费 Kafka topic，调试路径更短
+
+如果后面需要更接近生产：
+
+- 可以让 feature / signal / portfolio topic 落到 ClickHouse、Timescale 或 QuestDB
+- 再由 Grafana 直接读取这些时序表

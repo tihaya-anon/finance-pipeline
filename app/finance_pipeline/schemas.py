@@ -36,6 +36,19 @@ class MarketTick:
         payload["event_time"] = format_utc_timestamp(self.event_time)
         return payload
 
+    @classmethod
+    def from_binance_agg_trade(cls, payload: dict[str, Any]) -> "MarketTick":
+        """Map Binance aggTrade payloads into the internal normalized tick schema."""
+        event_time = datetime.fromtimestamp(int(payload["T"]) / 1000, tz=timezone.utc)
+        side = "sell" if payload["m"] else "buy"
+        return cls(
+            symbol=payload["s"],
+            event_time=event_time,
+            price=float(payload["p"]),
+            quantity=float(payload["q"]),
+            side=side,
+        )
+
 
 @dataclass(frozen=True)
 class MarketFeature:
@@ -114,3 +127,16 @@ class PortfolioSnapshot:
         payload = asdict(self)
         payload["timestamp"] = format_utc_timestamp(self.timestamp)
         return payload
+
+    @classmethod
+    def from_payload(cls, payload: dict[str, Any]) -> "PortfolioSnapshot":
+        return cls(
+            symbol=payload["symbol"],
+            timestamp=parse_utc_timestamp(payload["timestamp"]),
+            action=payload["action"],
+            fill_price=float(payload["fill_price"]),
+            target_position=int(payload["target_position"]),
+            current_position=int(payload["current_position"]),
+            cash=float(payload["cash"]),
+            equity=float(payload["equity"]),
+        )

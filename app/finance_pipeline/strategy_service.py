@@ -38,7 +38,7 @@ def main() -> None:
 
     try:
         with output_path.open("w", encoding="utf-8") as handle:
-            while processed < args.max_messages:
+            while args.max_messages <= 0 or processed < args.max_messages:
                 records = consumer.poll(timeout_ms=SETTINGS.consumer_timeout_ms)
                 if not records:
                     continue
@@ -56,9 +56,9 @@ def main() -> None:
                             f"signal {processed}: {signal.symbol} target={signal.target_position} "
                             f"return={signal.price_return:.5f}"
                         )
-                        if processed >= args.max_messages:
+                        if args.max_messages > 0 and processed >= args.max_messages:
                             break
-                    if processed >= args.max_messages:
+                    if args.max_messages > 0 and processed >= args.max_messages:
                         break
     finally:
         producer.flush()

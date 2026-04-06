@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Any, Iterable
 
 from kafka import KafkaConsumer, KafkaProducer
 
@@ -24,14 +24,15 @@ def build_producer(bootstrap_servers: str) -> KafkaProducer:
 
 
 def build_consumer(
-    topic: str,
+    topic: str | Iterable[str],
     *,
     bootstrap_servers: str,
     group_id: str,
     consumer_timeout_ms: int,
 ) -> KafkaConsumer:
+    topics = [topic] if isinstance(topic, str) else list(topic)
     return KafkaConsumer(
-        topic,
+        *topics,
         bootstrap_servers=bootstrap_servers,
         group_id=group_id,
         auto_offset_reset="earliest",

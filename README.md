@@ -8,6 +8,7 @@
 2. Flink SQL 做 5 秒窗口聚合，产出实时市场特征
 3. Python 策略服务消费特征，生成简单动量信号
 4. Python 组合服务消费信号，记录仓位、现金和权益快照
+5. 本地 dashboard 实时展示 feature / signal / portfolio 的变化
 
 ## 技术栈
 
@@ -55,11 +56,29 @@ uv --directory app run pytest
 ./scripts/run_mvp.sh
 ```
 
+启动常驻开发栈和 dashboard：
+
+```bash
+./scripts/start_dev_stack.sh
+```
+
+打开可视化：
+
+```bash
+http://127.0.0.1:8100
+```
+
 查看结果：
 
 ```bash
 cat artifacts/signals.jsonl
 cat artifacts/portfolio.jsonl
+```
+
+接 Binance 实时公开数据：
+
+```bash
+uv --directory app run stream-binance
 ```
 
 停止基础设施：
@@ -76,11 +95,14 @@ docker compose down
 - Flink SQL 作业定义在 `sql/market_features.sql`
 - 示例数据覆盖 6 个 5 秒窗口，脚本默认消费 6 条特征和 6 条信号
 - Python 依赖和锁文件都位于 `app/`
+- dashboard 默认地址是 `http://127.0.0.1:8100`
+- 组合快照会额外写入 Kafka topic `portfolio_snapshots`
 
 ## 文档
 
 - 设计说明见 `docs/architecture.md`
 - 运行说明见 `docs/runbook.md`
+- 数据源说明见 `docs/data-sources.md`
 
 ## 后续扩展方向
 
