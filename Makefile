@@ -18,7 +18,7 @@ export HOST_QUESTDB_HTTP_PORT
 export HOST_QUESTDB_ILP_PORT
 export HOST_QUESTDB_PG_PORT
 
-.PHONY: help install test mvp dev stop reset clean-data retention replay replay-fast binance compose-config ports
+.PHONY: help install test mvp dev docker stop reset clean-data retention replay replay-fast binance compose-config ports
 
 help:
 	@echo "Targets:"
@@ -26,6 +26,7 @@ help:
 	@echo "  make test          - run Python tests"
 	@echo "  make mvp           - run the bounded MVP flow"
 	@echo "  make dev           - start long-running dev stack"
+	@echo "  make docker        - alias of make dev"
 	@echo "  make stop          - stop docker + local background services"
 	@echo "  make reset         - stop and fully reset stack state"
 	@echo "  make clean-data    - clear topics/artifacts while keeping stack up"
@@ -50,6 +51,8 @@ mvp:
 
 dev:
 	./scripts/start_dev_stack.sh
+
+docker: dev
 
 stop:
 	./scripts/stop_stack.sh
