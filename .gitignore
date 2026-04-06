@@ -1,0 +1,11 @@
+app/.venv/
+__pycache__/
+app/.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.DS_Store
+*.egg-info/
+artifacts/*
+!artifacts/.gitkeep

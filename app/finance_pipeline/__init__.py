@@ -1,0 +1,1 @@
+"""Finance pipeline MVP package."""

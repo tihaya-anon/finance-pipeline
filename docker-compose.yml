@@ -1,0 +1,61 @@
+services:
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.3.5
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - "1G"
+      - --reserve-memory
+      - "0M"
+      - --check=false
+      - --node-id
+      - "0"
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:9092,OUTSIDE://0.0.0.0:${HOST_KAFKA_PORT:-39092}
+      - --advertise-kafka-addr
+      - PLAINTEXT://redpanda:9092,OUTSIDE://localhost:${HOST_KAFKA_PORT:-39092}
+    ports:
+      - "${HOST_KAFKA_PORT:-39092}:${HOST_KAFKA_PORT:-39092}"
+      - "9644:9644"
+
+  jobmanager:
+    image: finance-pipeline-flink:local
+    build:
+      context: .
+      dockerfile: docker/flink/Dockerfile
+    command: jobmanager
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redpanda
+
+  taskmanager:
+    image: finance-pipeline-flink:local
+    build:
+      context: .
+      dockerfile: docker/flink/Dockerfile
+    command: taskmanager
+    environment:
+      JOB_MANAGER_RPC_ADDRESS: jobmanager
+    depends_on:
+      - jobmanager
+
+  sql-client:
+    image: finance-pipeline-flink:local
+    build:
+      context: .
+      dockerfile: docker/flink/Dockerfile
+    entrypoint:
+      - /bin/bash
+      - -lc
+      - /opt/flink/bin/sql-client.sh -f /opt/flink/sql/market_features.sql
+    depends_on:
+      - redpanda
+      - jobmanager
+      - taskmanager
