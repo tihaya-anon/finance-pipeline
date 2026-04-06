@@ -4,6 +4,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+. "$ROOT_DIR/scripts/port_state.sh"
+
 mkdir -p artifacts
 : > artifacts/signals.jsonl
 : > artifacts/portfolio.jsonl
@@ -15,6 +17,10 @@ cleanup() {
 }
 
 trap cleanup EXIT
+
+cleanup_partial_compose_state
+resolve_runtime_ports
+save_runtime_ports
 
 uv --directory app sync --group dev
 docker compose up -d --build redpanda jobmanager taskmanager

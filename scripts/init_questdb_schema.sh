@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+. "$ROOT_DIR/scripts/port_state.sh"
+load_saved_ports
+
+QUESTDB_HTTP_PORT="${HOST_QUESTDB_HTTP_PORT:-9000}"
+QUESTDB_EXEC_URL="http://127.0.0.1:${QUESTDB_HTTP_PORT}/exec"
+QUESTDB_TTL="${DEV_QUESTDB_TTL:-6 HOURS}"
+
+run_query() {
+  local query="$1"
+  local response=""
+
+  response="$(curl -fsSG "$QUESTDB_EXEC_URL" --data-urlencode "query=$query")"
+  if grep -q '"error"' <<<"$response"; then
+    echo "QuestDB schema init failed: $response" >&2
+    return 1
+  fi
+}
+
+run_query "DROP TABLE IF EXISTS market_features"
+run_query "DROP TABLE IF EXISTS trade_signals"
+run_query "DROP TABLE IF EXISTS portfolio_snapshots"
+
+run_query "CREATE TABLE market_features (
+  timestamp TIMESTAMP,
+  symbol SYMBOL,
+  window_start VARCHAR,
+  window_end VARCHAR,
+  trade_count LONG,
+  avg_price DOUBLE,
+  open_price DOUBLE,
+  close_price DOUBLE,
+  total_quantity DOUBLE,
+  price_return DOUBLE
+) TIMESTAMP(timestamp) PARTITION BY HOUR TTL ${QUESTDB_TTL} WAL"
+
+run_query "CREATE TABLE trade_signals (
+  timestamp TIMESTAMP,
+  symbol SYMBOL,
+  generated_at VARCHAR,
+  window_end VARCHAR,
+  target_position LONG,
+  reference_price DOUBLE,
+  price_return DOUBLE,
+  reason VARCHAR
+) TIMESTAMP(timestamp) PARTITION BY HOUR TTL ${QUESTDB_TTL} WAL"
+
+run_query "CREATE TABLE portfolio_snapshots (
+  timestamp TIMESTAMP,
+  symbol SYMBOL,
+  event_timestamp VARCHAR,
+  action VARCHAR,
+  fill_price DOUBLE,
+  target_position LONG,
+  current_position LONG,
+  cash DOUBLE,
+  equity DOUBLE
+) TIMESTAMP(timestamp) PARTITION BY HOUR TTL ${QUESTDB_TTL} WAL"
+
+echo "QuestDB schema is ready."

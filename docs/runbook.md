@@ -28,14 +28,18 @@ uv --directory app run pytest
 
 - 启动 Redpanda 和 Flink
 - 启动 Redpanda Console、QuestDB、Grafana
+- 自动选择可用宿主机端口并保存到 `artifacts/ports.env`
+- 初始化 QuestDB dashboard 依赖表结构，并在开发模式下重建分析表
 - 提交 Flink SQL 作业
 - 常驻启动 strategy / portfolio / questdb-sink 服务
 
 可视化地址：
 
-- Redpanda Console: `http://127.0.0.1:${HOST_CONSOLE_PORT:-8080}`
-- Grafana: `http://127.0.0.1:${HOST_GRAFANA_PORT:-3000}`
-- QuestDB: `http://127.0.0.1:${HOST_QUESTDB_HTTP_PORT:-9000}`
+- 运行 `make ports`
+- Redpanda Console: `http://127.0.0.1:<HOST_CONSOLE_PORT>`
+- Grafana: `http://127.0.0.1:<HOST_GRAFANA_PORT>`
+- QuestDB: `http://127.0.0.1:<HOST_QUESTDB_HTTP_PORT>`
+- Flink UI: `http://127.0.0.1:<HOST_FLINK_PORT>`
 
 推样例数据：
 
@@ -49,7 +53,7 @@ uv --directory app run replay-market --speedup 50
 uv --directory app run stream-binance
 ```
 
-默认暴露：
+默认候选端口：
 
 - Kafka: `localhost:39092`
 - Flink UI: `http://localhost:${HOST_FLINK_PORT:-8081}`
@@ -71,6 +75,13 @@ HOST_GRAFANA_PORT=13000 \
 HOST_FLINK_PORT=18081 \
 ./scripts/start_dev_stack.sh
 ```
+
+不传环境变量时，脚本会自动向上扫描空闲端口；成功启动后可用 `make ports` 查看最终映射。
+开发环境还会自动清理数据：
+
+- Redpanda topics 默认保留 `1` 小时，由 `DEV_TOPIC_RETENTION_MS` 控制
+- QuestDB 分析表按 `HOUR` 分区，默认保留 `6` 小时，由 `DEV_QUESTDB_TTL` 控制
+- 每次 `make dev` 会重建 QuestDB 分析表，避免开发过程无限积累旧数据
 
 ## Outputs
 

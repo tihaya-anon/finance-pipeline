@@ -62,11 +62,16 @@ make mvp
 make dev
 ```
 
+启动脚本会自动探测宿主机端口冲突，向上寻找空闲端口，并把本次成功端口保存到 `artifacts/ports.env` 以便下次复用。
+开发模式默认只保留短期数据：Kafka topics 默认保留 `1` 小时，QuestDB 分析表按小时分区并默认保留 `6` 小时。
+
 常用入口：
 
-- Redpanda Console: `http://127.0.0.1:${HOST_CONSOLE_PORT:-8080}`
-- Grafana: `http://127.0.0.1:${HOST_GRAFANA_PORT:-3000}`
-- QuestDB Web Console: `http://127.0.0.1:${HOST_QUESTDB_HTTP_PORT:-9000}`
+- `make ports`
+- Redpanda Console: `http://127.0.0.1:<HOST_CONSOLE_PORT>`
+- Grafana: `http://127.0.0.1:<HOST_GRAFANA_PORT>`
+- QuestDB Web Console: `http://127.0.0.1:<HOST_QUESTDB_HTTP_PORT>`
+- Flink Web UI: `http://127.0.0.1:<HOST_FLINK_PORT>`
 
 查看结果：
 
@@ -96,14 +101,19 @@ make reset
 ## 运行说明
 
 - Kafka 对宿主机默认暴露为 `localhost:39092`
-- 如果端口冲突，启动前设置环境变量即可，例如：
+- 启动时会优先复用 `artifacts/ports.env` 中上次成功的端口；如果端口被占用，会自动向上扫描空闲端口
+- 需要查看当前映射时运行 `make ports`
+- 如需显式覆盖端口，仍可在启动前设置环境变量，例如：
   `HOST_KAFKA_PORT=49092 HOST_QUESTDB_HTTP_PORT=19000 ./scripts/start_dev_stack.sh`
-- Flink Web UI 为 `http://localhost:${HOST_FLINK_PORT:-8081}`
+- Flink Web UI 地址由 `make ports` 输出中的 `HOST_FLINK_PORT` 决定
+- 开发环境默认会在 `make dev` 时重建 QuestDB 分析表，并用 `DEV_TOPIC_RETENTION_MS` 与 `DEV_QUESTDB_TTL` 控制自动清理窗口
 - Flink SQL 作业定义在 `sql/market_features.sql`
 - 示例数据覆盖 6 个 5 秒窗口，脚本默认消费 6 条特征和 6 条信号
 - Python 依赖和锁文件都位于 `app/`
 - 组合快照会额外写入 Kafka topic `portfolio_snapshots`
 - Grafana 默认会自动加载 `Finance Pipeline` dashboard
+- QuestDB 表结构会在启动时自动初始化；如果还没回放或接入实时数据，Grafana 会显示空图而不是报表不存在
+- 如果需要更短或更长的保留时间，可覆盖例如 `make dev DEV_TOPIC_RETENTION_MS=900000 DEV_QUESTDB_TTL='2 HOURS'`
 - 常用入口都收在 `Makefile`
 
 ## 文档

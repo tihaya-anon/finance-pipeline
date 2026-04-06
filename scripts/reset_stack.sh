@@ -9,8 +9,9 @@ cd "$ROOT_DIR"
 docker compose down -v --remove-orphans >/dev/null 2>&1 || true
 
 rm -f artifacts/*.jsonl artifacts/*.log
+rm -f artifacts/service-pids.env
 touch artifacts/.gitkeep
 
 echo "Finance pipeline stack reset."
-echo "If you still have port conflicts, check local listeners with:"
-echo "  ss -ltn | rg '39092|8080|8081|9000|9009|8812|3000'"
+echo "Current preferred ports:"
+make ports

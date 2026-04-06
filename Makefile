@@ -1,5 +1,7 @@
 SHELL := /bin/bash
 
+-include artifacts/ports.env
+
 HOST_KAFKA_PORT ?= 39092
 HOST_REDPANDA_ADMIN_PORT ?= 9644
 HOST_CONSOLE_PORT ?= 8080
@@ -8,6 +10,9 @@ HOST_FLINK_PORT ?= 8081
 HOST_QUESTDB_HTTP_PORT ?= 9000
 HOST_QUESTDB_ILP_PORT ?= 9009
 HOST_QUESTDB_PG_PORT ?= 8812
+KAFKA_BOOTSTRAP_SERVERS ?= localhost:$(HOST_KAFKA_PORT)
+DEV_TOPIC_RETENTION_MS ?= 3600000
+DEV_QUESTDB_TTL ?= 6 HOURS
 
 export HOST_KAFKA_PORT
 export HOST_REDPANDA_ADMIN_PORT
@@ -17,6 +22,9 @@ export HOST_FLINK_PORT
 export HOST_QUESTDB_HTTP_PORT
 export HOST_QUESTDB_ILP_PORT
 export HOST_QUESTDB_PG_PORT
+export KAFKA_BOOTSTRAP_SERVERS
+export DEV_TOPIC_RETENTION_MS
+export DEV_QUESTDB_TTL
 
 .PHONY: help install test mvp dev docker stop reset clean-data retention replay replay-fast binance compose-config ports
 
@@ -39,6 +47,9 @@ help:
 	@echo ""
 	@echo "Example:"
 	@echo "  make dev HOST_QUESTDB_HTTP_PORT=19000 HOST_GRAFANA_PORT=13000"
+	@echo ""
+	@echo "Ports are auto-selected and persisted in artifacts/ports.env."
+	@echo "Dev retention defaults: DEV_TOPIC_RETENTION_MS=$(DEV_TOPIC_RETENTION_MS), DEV_QUESTDB_TTL=$(DEV_QUESTDB_TTL)"
 
 install:
 	uv --directory app sync --group dev
@@ -87,3 +98,6 @@ ports:
 	@echo "HOST_QUESTDB_HTTP_PORT=$(HOST_QUESTDB_HTTP_PORT)"
 	@echo "HOST_QUESTDB_ILP_PORT=$(HOST_QUESTDB_ILP_PORT)"
 	@echo "HOST_QUESTDB_PG_PORT=$(HOST_QUESTDB_PG_PORT)"
+	@echo "KAFKA_BOOTSTRAP_SERVERS=$(KAFKA_BOOTSTRAP_SERVERS)"
+	@echo "DEV_TOPIC_RETENTION_MS=$(DEV_TOPIC_RETENTION_MS)"
+	@echo "DEV_QUESTDB_TTL=$(DEV_QUESTDB_TTL)"
