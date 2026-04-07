@@ -177,6 +177,7 @@ make reset
 ## 文档
 
 - 设计说明见 `docs/architecture.md`
+- 开发计划与并行策略见 `docs/development-plan.md`
 - 运行说明见 `docs/runbook.md`
 - 数据源说明见 `docs/data-sources.md`
 - Binance 接入手册见 `docs/binance-manual.md`
