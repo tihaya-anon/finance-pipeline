@@ -74,6 +74,10 @@ def normalize_hex_address(address: str) -> str:
     return address if address.startswith("0x") else f"0x{address}"
 
 
+def parse_hex_int(raw_value: str) -> int:
+    return int(raw_value, 16)
+
+
 def decode_uint256_words(data_hex: str) -> list[int]:
     payload = data_hex.removeprefix("0x")
     if len(payload) % 64 != 0:
@@ -126,18 +130,13 @@ class BlockTimestampResolver:
         self._block_cache: dict[str, datetime] = {}
         self._request_ids = itertools.count(1)
 
-    def resolve(self, block_hash: str) -> datetime:
-        normalized_hash = block_hash.lower()
-        cached = self._block_cache.get(normalized_hash)
-        if cached is not None:
-            return cached
-
+    def _call(self, method: str, params: list[Any]) -> Any:
         payload = json.dumps(
             {
                 "jsonrpc": "2.0",
                 "id": next(self._request_ids),
-                "method": "eth_getBlockByHash",
-                "params": [normalized_hash, False],
+                "method": method,
+                "params": params,
             }
         ).encode("utf-8")
         req = request.Request(
@@ -150,15 +149,51 @@ class BlockTimestampResolver:
             result = json.load(response)
 
         if result.get("error"):
-            raise RuntimeError(f"RPC error while fetching block {block_hash}: {result['error']}")
+            raise RuntimeError(f"RPC error for {method}: {result['error']}")
+        return result.get("result")
 
-        block = result.get("result")
+    def latest_block_number(self) -> int:
+        latest = self._call("eth_blockNumber", [])
+        if latest is None:
+            raise RuntimeError("RPC returned no block number")
+        return parse_hex_int(latest)
+
+    def resolve(self, block_hash: str) -> datetime:
+        normalized_hash = block_hash.lower()
+        cached = self._block_cache.get(normalized_hash)
+        if cached is not None:
+            return cached
+
+        block = self._call("eth_getBlockByHash", [normalized_hash, False])
         if not block or "timestamp" not in block:
             raise RuntimeError(f"Block not found for hash {block_hash}")
 
         block_timestamp = datetime.fromtimestamp(int(block["timestamp"], 16), tz=timezone.utc)
         self._block_cache[normalized_hash] = block_timestamp
         return block_timestamp
+
+    def fetch_logs(self, *, address: str, topics: list[str], from_block: int, to_block: int | str = "latest") -> list[dict[str, Any]]:
+        filter_params = {
+            "address": normalize_hex_address(address),
+            "topics": topics,
+            "fromBlock": hex(from_block),
+            "toBlock": hex(to_block) if isinstance(to_block, int) else to_block,
+        }
+        result = self._call("eth_getLogs", [filter_params])
+        if not isinstance(result, list):
+            raise RuntimeError(f"Unexpected eth_getLogs result type: {type(result)!r}")
+        return result
+
+
+def sort_evm_logs(logs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return sorted(
+        logs,
+        key=lambda log: (
+            parse_hex_int(log.get("blockNumber", "0x0")),
+            parse_hex_int(log.get("transactionIndex", "0x0")),
+            parse_hex_int(log.get("logIndex", "0x0")),
+        ),
+    )
 
 
 async def stream_onchain_swaps(args: argparse.Namespace) -> None:

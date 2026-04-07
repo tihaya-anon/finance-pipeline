@@ -12,6 +12,7 @@ from finance_pipeline.onchain_source import (
     BlockTimestampResolver,
     UNISWAP_V2_SWAP_TOPIC,
     normalize_hex_address,
+    sort_evm_logs,
     tick_from_swap_log,
     validate_args,
 )
@@ -29,7 +30,26 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--quote-decimals", type=int, default=SETTINGS.evm_quote_decimals)
     parser.add_argument("--output", default=str(SETTINGS.onchain_capture_output))
     parser.add_argument("--max-events", type=int, default=SETTINGS.onchain_capture_max_events)
+    parser.add_argument("--lookback-blocks", type=int, default=SETTINGS.onchain_capture_lookback_blocks)
     return parser.parse_args()
+
+
+def capture_recent_ticks(args: argparse.Namespace, timestamp_resolver: BlockTimestampResolver) -> list:
+    latest_block = timestamp_resolver.latest_block_number()
+    from_block = max(latest_block - args.lookback_blocks, 0)
+    recent_logs = timestamp_resolver.fetch_logs(
+        address=args.pair_address,
+        topics=[UNISWAP_V2_SWAP_TOPIC],
+        from_block=from_block,
+        to_block=latest_block,
+    )
+    pair = validate_args(args)
+    ticks = []
+    for index, log in enumerate(sort_evm_logs(recent_logs)[-args.max_events :], start=1):
+        block_timestamp = timestamp_resolver.resolve(log["blockHash"])
+        ticks.append(tick_from_swap_log(log, pair, block_timestamp))
+        print(f"captured recent onchain tick {index}/{args.max_events}")
+    return ticks
 
 
 async def capture_ticks(args: argparse.Namespace) -> None:
@@ -47,7 +67,12 @@ async def capture_ticks(args: argparse.Namespace) -> None:
         ],
     }
     timestamp_resolver = BlockTimestampResolver(args.http_url)
-    ticks = []
+    ticks = capture_recent_ticks(args, timestamp_resolver)
+
+    if len(ticks) >= args.max_events:
+        write_ticks(Path(args.output), ticks[: args.max_events])
+        print(f"wrote {len(ticks[: args.max_events])} captured ticks to {args.output}")
+        return
 
     async with connect(args.ws_url) as websocket:
         await websocket.send(json.dumps(subscription_request))
@@ -59,7 +84,7 @@ async def capture_ticks(args: argparse.Namespace) -> None:
 
             block_timestamp = timestamp_resolver.resolve(log["blockHash"])
             ticks.append(tick_from_swap_log(log, pair, block_timestamp))
-            print(f"captured onchain tick {len(ticks)}/{args.max_events}")
+            print(f"captured live onchain tick {len(ticks)}/{args.max_events}")
 
     write_ticks(Path(args.output), ticks)
     print(f"wrote {len(ticks)} captured ticks to {args.output}")

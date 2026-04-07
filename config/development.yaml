@@ -28,7 +28,8 @@ sources:
     base_decimals: 18
     quote_decimals: 6
     capture_output: "data/fixtures/onchain/uniswap_v2_eth_usdc_ticks.csv"
-    capture_max_events: 200
+    capture_max_events: 20
+    capture_lookback_blocks: 500
   synthetic:
     output_csv: "data/fixtures/generated/synthetic_ticks.csv"
     symbol: "BTCUSDT"

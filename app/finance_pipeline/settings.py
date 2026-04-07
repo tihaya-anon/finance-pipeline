@@ -57,6 +57,12 @@ class PipelineSettings:
     onchain_capture_max_events: int = int(
         os.getenv("ONCHAIN_CAPTURE_MAX_EVENTS", str(get_config_value(CONFIG, "sources.onchain.capture_max_events", 200)))
     )
+    onchain_capture_lookback_blocks: int = int(
+        os.getenv(
+            "ONCHAIN_CAPTURE_LOOKBACK_BLOCKS",
+            str(get_config_value(CONFIG, "sources.onchain.capture_lookback_blocks", 500)),
+        )
+    )
     synthetic_output_csv: Path = resolve_repo_path(
         os.getenv(
             "SYNTHETIC_OUTPUT_CSV",

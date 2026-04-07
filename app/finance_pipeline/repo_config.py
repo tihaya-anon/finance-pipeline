@@ -45,6 +45,7 @@ CONFIG_ENV_MAPPINGS = {
     "sources.onchain.quote_decimals": "EVM_QUOTE_DECIMALS",
     "sources.onchain.capture_output": "ONCHAIN_CAPTURE_OUTPUT",
     "sources.onchain.capture_max_events": "ONCHAIN_CAPTURE_MAX_EVENTS",
+    "sources.onchain.capture_lookback_blocks": "ONCHAIN_CAPTURE_LOOKBACK_BLOCKS",
     "sources.synthetic.output_csv": "SYNTHETIC_OUTPUT_CSV",
     "sources.synthetic.symbol": "SYNTHETIC_SYMBOL",
     "sources.synthetic.start_time": "SYNTHETIC_START_TIME",

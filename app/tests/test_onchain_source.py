@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from finance_pipeline.onchain_source import PairConfig, tick_from_swap_log
+from finance_pipeline.onchain_source import PairConfig, sort_evm_logs, tick_from_swap_log
 
 
 def build_swap_log(data_hex: str) -> dict[str, str]:
@@ -55,3 +55,16 @@ def test_tick_from_swap_log_maps_sell_of_base_token() -> None:
     assert tick.side == "sell"
     assert tick.quantity == 2.0
     assert tick.price == 3200.0
+
+
+def test_sort_evm_logs_orders_by_block_then_log_position() -> None:
+    logs = [
+        {"blockNumber": "0x11", "transactionIndex": "0x2", "logIndex": "0x1"},
+        {"blockNumber": "0x10", "transactionIndex": "0x3", "logIndex": "0x0"},
+        {"blockNumber": "0x11", "transactionIndex": "0x1", "logIndex": "0x2"},
+    ]
+
+    sorted_logs = sort_evm_logs(logs)
+
+    assert [log["blockNumber"] for log in sorted_logs] == ["0x10", "0x11", "0x11"]
+    assert sorted_logs[1]["transactionIndex"] == "0x1"
