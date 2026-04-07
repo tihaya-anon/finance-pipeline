@@ -57,6 +57,11 @@ CONFIG_ENV_MAPPINGS = {
     "sources.synthetic.volatility_bps": "SYNTHETIC_VOLATILITY_BPS",
     "sources.synthetic.drift_bps": "SYNTHETIC_DRIFT_BPS",
     "sources.synthetic.seed": "SYNTHETIC_SEED",
+    "sources.synthetic_stream.symbol": "SIMULATION_SYMBOL",
+    "sources.synthetic_stream.start_price": "SIMULATION_START_PRICE",
+    "sources.synthetic_stream.interval_ms": "SIMULATION_INTERVAL_MS",
+    "sources.synthetic_stream.seed": "SIMULATION_SEED",
+    "sources.synthetic_stream.default_scenario": "SIMULATION_SCENARIO",
 }
 
 

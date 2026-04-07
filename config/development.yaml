@@ -42,3 +42,46 @@ sources:
     volatility_bps: 8.0
     drift_bps: 0.0
     seed: 7
+  synthetic_stream:
+    symbol: "BTCUSDT"
+    start_price: 43100.0
+    interval_ms: 500
+    seed: 11
+    default_scenario: "calm_range"
+    scenarios:
+      calm_range:
+        drift_bps: 0.0
+        volatility_bps: 2.0
+        quantity_min: 0.03
+        quantity_max: 0.15
+        jump_probability: 0.0
+        jump_bps: 0.0
+        burst_probability: 0.01
+        burst_multiplier: 2.0
+      trend_up:
+        drift_bps: 1.5
+        volatility_bps: 3.0
+        quantity_min: 0.04
+        quantity_max: 0.18
+        jump_probability: 0.01
+        jump_bps: 8.0
+        burst_probability: 0.02
+        burst_multiplier: 2.5
+      selloff:
+        drift_bps: -2.0
+        volatility_bps: 5.0
+        quantity_min: 0.05
+        quantity_max: 0.22
+        jump_probability: 0.03
+        jump_bps: 18.0
+        burst_probability: 0.06
+        burst_multiplier: 4.0
+      bursty:
+        drift_bps: 0.2
+        volatility_bps: 7.0
+        quantity_min: 0.04
+        quantity_max: 0.25
+        jump_probability: 0.05
+        jump_bps: 12.0
+        burst_probability: 0.12
+        burst_multiplier: 6.0

@@ -68,6 +68,14 @@ make generate-synthetic
 make replay-synthetic
 ```
 
+持续发送模拟数据：
+
+```bash
+make simulate
+```
+
+场景默认取自 `config/development.yaml` 的 `sources.synthetic_stream.default_scenario`。
+
 抓取链上 fixture：
 
 ```bash
@@ -155,3 +163,4 @@ Kafka/Redpanda 原生支持 retention，不需要额外写应用层清理器。
 - 最后一个窗口是否输出取决于事件时间与 watermark 推进
 - Flink 特征目前只使用简单聚合，不包含盘口或波动率细节
 - 当前推荐开发流是 fixture-first：优先用本地样本和 synthetic 数据复现问题，再按需接真实实时源
+- `make simulate` 适合做长时间、稳定、可控的链路演示；相比一次性 replay，更适合观察 Grafana 和 consumer 常驻行为

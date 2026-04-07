@@ -32,6 +32,7 @@ Binance 官方文档说明：
 
 - 本地开发 / dashboard 演示：优先使用本地 fixture 和 synthetic data
 - 回放测试：仓库自带 CSV 样例或 `make generate-synthetic` 产出的 fixture
+- 常驻模拟流：`make simulate` 按 YAML 场景持续发 tick
 - 真实链上采样：`make capture-onchain` 抓一小段样本再本地回放
 - 后续扩展到衍生品：优先接 Bybit public trade / orderbook，再考虑 Binance Futures
 
@@ -82,6 +83,7 @@ make onchain \
 
 - `sources.replay`: 默认回放 fixture 与速度
 - `sources.synthetic`: synthetic fixture 输出路径与生成参数
+- `sources.synthetic_stream`: 常驻模拟流的默认 symbol、起始价格、tick 频率和场景配置
 - `sources.binance`: Binance 公共流地址
 - `sources.onchain`: 链上 WS/HTTP endpoint、pair、symbol、decimals、capture 输出路径
 

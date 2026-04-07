@@ -5,7 +5,7 @@ export FINANCE_PIPELINE_CONFIG := $(CONFIG_FILE)
 
 CONFIG_ENV = . ./scripts/config_env.sh && load_config_env
 
-.PHONY: help install test mvp dev docker stop reset clean-data retention replay replay-fast binance onchain capture-onchain generate-synthetic replay-synthetic compose-config net config-show
+.PHONY: help install test mvp dev docker stop reset clean-data retention replay replay-fast binance onchain capture-onchain generate-synthetic replay-synthetic simulate compose-config net config-show
 
 help:
 	@echo "Targets:"
@@ -23,6 +23,7 @@ help:
 	@echo "  make replay-fast   - replay sample data faster"
 	@echo "  make generate-synthetic - generate a local synthetic CSV fixture"
 	@echo "  make replay-synthetic   - generate then replay the synthetic fixture"
+	@echo "  make simulate      - continuously stream synthetic ticks using a YAML scenario"
 	@echo "  make binance       - stream live Binance aggTrade data"
 	@echo "  make onchain       - stream EVM AMM swap logs into Kafka"
 	@echo "  make capture-onchain - capture onchain swap logs into a local fixture"
@@ -75,6 +76,9 @@ generate-synthetic:
 replay-synthetic:
 	@$(CONFIG_ENV) && uv --directory app run generate-synthetic-fixture && uv --directory app run replay-market --csv "$$SYNTHETIC_OUTPUT_CSV"
 
+simulate:
+	@$(CONFIG_ENV) && uv --directory app run stream-simulated
+
 binance:
 	@$(CONFIG_ENV) && uv --directory app run stream-binance
 
@@ -106,4 +110,5 @@ net:
 	echo "  Topic Retention:       $${DEV_TOPIC_RETENTION_MS} ms" && \
 	echo "  QuestDB TTL:           $${DEV_QUESTDB_TTL}" && \
 	echo "  Replay Fixture:        $${REPLAY_FIXTURE_CSV}" && \
-	echo "  Synthetic Fixture:     $${SYNTHETIC_OUTPUT_CSV}"
+	echo "  Synthetic Fixture:     $${SYNTHETIC_OUTPUT_CSV}" && \
+	echo "  Simulation Scenario:   $${SIMULATION_SCENARIO}"

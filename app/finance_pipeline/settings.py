@@ -97,6 +97,23 @@ class PipelineSettings:
         os.getenv("SYNTHETIC_DRIFT_BPS", str(get_config_value(CONFIG, "sources.synthetic.drift_bps", 0.0)))
     )
     synthetic_seed: int = int(os.getenv("SYNTHETIC_SEED", str(get_config_value(CONFIG, "sources.synthetic.seed", 7))))
+    simulation_symbol: str = os.getenv(
+        "SIMULATION_SYMBOL",
+        str(get_config_value(CONFIG, "sources.synthetic_stream.symbol", "BTCUSDT")),
+    )
+    simulation_start_price: float = float(
+        os.getenv("SIMULATION_START_PRICE", str(get_config_value(CONFIG, "sources.synthetic_stream.start_price", 43100.0)))
+    )
+    simulation_interval_ms: int = int(
+        os.getenv("SIMULATION_INTERVAL_MS", str(get_config_value(CONFIG, "sources.synthetic_stream.interval_ms", 500)))
+    )
+    simulation_seed: int = int(
+        os.getenv("SIMULATION_SEED", str(get_config_value(CONFIG, "sources.synthetic_stream.seed", 11)))
+    )
+    simulation_scenario: str = os.getenv(
+        "SIMULATION_SCENARIO",
+        str(get_config_value(CONFIG, "sources.synthetic_stream.default_scenario", "calm_range")),
+    )
 
 
 SETTINGS = PipelineSettings()
