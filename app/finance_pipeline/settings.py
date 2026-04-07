@@ -51,7 +51,7 @@ class PipelineSettings:
     onchain_capture_output: Path = resolve_repo_path(
         os.getenv(
             "ONCHAIN_CAPTURE_OUTPUT",
-            str(get_config_value(CONFIG, "sources.onchain.capture_output", "data/fixtures/onchain/uniswap_v2_eth_usdc_ticks.csv")),
+            str(get_config_value(CONFIG, "sources.onchain.capture_output", "data/fixtures/onchain/uniswap_v2_weth_usdt_ticks.csv")),
         )
     )
     onchain_capture_max_events: int = int(

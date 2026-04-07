@@ -64,8 +64,8 @@ make onchain \
   EVM_WS_URL=wss://your-node.example/ws \
   EVM_HTTP_URL=https://your-node.example/http \
   EVM_PAIR_ADDRESS=0xYourPairAddress \
-  EVM_BASE_SYMBOL=ETH \
-  EVM_QUOTE_SYMBOL=USDC \
+  EVM_BASE_SYMBOL=WETH \
+  EVM_QUOTE_SYMBOL=USDT \
   EVM_BASE_DECIMALS=18 \
   EVM_QUOTE_DECIMALS=6
 ```

@@ -23,11 +23,11 @@ sources:
     ws_url: ""
     http_url: ""
     pair_address: ""
-    base_symbol: "ETH"
-    quote_symbol: "USDC"
+    base_symbol: "WETH"
+    quote_symbol: "USDT"
     base_decimals: 18
     quote_decimals: 6
-    capture_output: "data/fixtures/onchain/uniswap_v2_eth_usdc_ticks.csv"
+    capture_output: "data/fixtures/onchain/uniswap_v2_weth_usdt_ticks.csv"
     capture_max_events: 20
     capture_lookback_blocks: 500
   synthetic:
