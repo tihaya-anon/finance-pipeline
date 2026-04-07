@@ -17,6 +17,7 @@ Recent commits use short imperative subjects like `Add Makefile shortcuts` and `
 
 ## Agent-Specific Instructions
 Contributors working through Codex or similar agents should use Chinese for user-facing conversation unless the user explicitly requests another language. Keep responses concise, technical, and tied to concrete repo actions.
+When parallel work is active, follow `docs/development-plan.md` and update `docs/parallel-status.md` before and after substantial work. Stay within your assigned worktree and file ownership boundary.
 
 ## Configuration Tips
 Host ports are configurable through `Makefile` variables such as `HOST_GRAFANA_PORT` and `HOST_QUESTDB_HTTP_PORT`; override them inline, for example `make dev HOST_GRAFANA_PORT=13000`. Startup scripts persist the last successful port set in `artifacts/ports.env`, reuse it on the next run, and scan upward when a preferred port is occupied. Do not commit runtime artifacts, secrets, or environment-specific port overrides.
