@@ -14,13 +14,20 @@
 6. Grafana 从 QuestDB 读取时序数据做大盘展示
 7. Redpanda Console 用于直接查看 topic、消息和 consumer 状态
 
+开发态额外约定：
+
+- source 层优先使用本地 fixture 和 synthetic data，减少对外部 endpoint 的依赖
+- 实时链上 source 主要用于抓一小段样本，再转回本地 fixture
+- 运行参数统一收敛到 `config/development.yaml`
+
 ## Layout
 
 - `app/`: Python 子工程，`uv` 在这里管理依赖、入口和测试
+- `config/`: YAML 配置，驱动 source 默认值、端口和保留策略
 - `sql/`: Flink SQL 作业
 - `docker/`: Flink 镜像定制
 - `scripts/`: 一键运行与基础设施辅助脚本
-- `data/`: 样例输入数据
+- `data/`: 样例输入数据、链上采样 fixture、synthetic fixture
 - `artifacts/`: 运行结果
 
 ## Design Choices

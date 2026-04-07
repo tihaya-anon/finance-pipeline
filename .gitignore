@@ -9,3 +9,7 @@ app/.pytest_cache/
 *.egg-info/
 artifacts/*
 !artifacts/.gitkeep
+data/fixtures/generated/*
+!data/fixtures/generated/.gitkeep
+data/fixtures/onchain/*
+!data/fixtures/onchain/.gitkeep

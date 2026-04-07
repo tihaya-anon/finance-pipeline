@@ -19,10 +19,12 @@
 ## 目录结构
 
 ```text
+config/                 YAML 运行配置
 app/                    Python 子工程根目录
 app/finance_pipeline/   Python package
 app/tests/              Python 单测
 data/sample/            示例行情
+data/fixtures/          本地 fixture 与合成数据
 docs/                   设计与运行文档
 docker/flink/           Flink 自定义镜像
 sql/                    Flink SQL 作业
@@ -48,6 +50,12 @@ artifacts/              运行结果输出
 ```bash
 make install
 make test
+```
+
+运行参数默认来自 `config/development.yaml`。需要切换配置文件时使用：
+
+```bash
+make dev CONFIG_FILE=config/development.yaml
 ```
 
 启动完整 MVP：
@@ -80,6 +88,24 @@ cat artifacts/signals.jsonl
 cat artifacts/portfolio.jsonl
 ```
 
+生成本地 synthetic fixture：
+
+```bash
+make generate-synthetic
+```
+
+回放 synthetic fixture：
+
+```bash
+make replay-synthetic
+```
+
+抓取链上样本到本地 fixture：
+
+```bash
+make capture-onchain
+```
+
 接 Binance 实时公开数据：
 
 ```bash
@@ -89,14 +115,7 @@ make binance
 接 EVM 链上 swap 数据：
 
 ```bash
-make onchain \
-  EVM_WS_URL=wss://your-node.example/ws \
-  EVM_HTTP_URL=https://your-node.example/http \
-  EVM_PAIR_ADDRESS=0xYourPairAddress \
-  EVM_BASE_SYMBOL=ETH \
-  EVM_QUOTE_SYMBOL=USDC \
-  EVM_BASE_DECIMALS=18 \
-  EVM_QUOTE_DECIMALS=6
+make onchain
 ```
 
 停止基础设施：
@@ -113,21 +132,21 @@ make reset
 
 ## 运行说明
 
+- 运行参数默认从 `config/development.yaml` 读取，Python source 和 shell 脚本共用同一份配置
 - Kafka 对宿主机默认暴露为 `localhost:39092`
 - 启动时会优先复用 `artifacts/ports.env` 中上次成功的端口；如果端口被占用，会自动向上扫描空闲端口
 - 需要查看当前映射时运行 `make ports`
-- 如需显式覆盖端口，仍可在启动前设置环境变量，例如：
-  `HOST_KAFKA_PORT=49092 HOST_QUESTDB_HTTP_PORT=19000 ./scripts/start_dev_stack.sh`
+- 需要查看当前 YAML 配置映射时运行 `make config-show`
 - Flink Web UI 地址由 `make ports` 输出中的 `HOST_FLINK_PORT` 决定
-- 开发环境默认会在 `make dev` 时重建 QuestDB 分析表，并用 `DEV_TOPIC_RETENTION_MS` 与 `DEV_QUESTDB_TTL` 控制自动清理窗口
+- 开发环境默认会在 `make dev` 时重建 QuestDB 分析表，并用 YAML 中的 retention 配置自动清理数据
 - Flink SQL 作业定义在 `sql/market_features.sql`
 - 示例数据覆盖 6 个 5 秒窗口，脚本默认消费 6 条特征和 6 条信号
 - Python 依赖和锁文件都位于 `app/`
 - 组合快照会额外写入 Kafka topic `portfolio_snapshots`
 - Grafana 默认会自动加载 `Finance Pipeline` dashboard
 - QuestDB 表结构会在启动时自动初始化；如果还没回放或接入实时数据，Grafana 会显示空图而不是报表不存在
-- `make onchain` 当前按 Uniswap V2 风格 `Swap` 事件把链上成交映射为 `market_ticks`
-- 如果需要更短或更长的保留时间，可覆盖例如 `make dev DEV_TOPIC_RETENTION_MS=900000 DEV_QUESTDB_TTL='2 HOURS'`
+- 推荐开发 workflow 是 `generate-synthetic` / `replay` / `replay-synthetic` / `capture-onchain`，真实 `make onchain` 只在需要时启用
+- `make onchain` 与 `make capture-onchain` 当前按 Uniswap V2 风格 `Swap` 事件把链上成交映射为 `market_ticks`
 - 常用入口都收在 `Makefile`
 
 ## 文档

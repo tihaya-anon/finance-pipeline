@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/scripts/config_env.sh"
+load_config_env
+
 until python3 - <<'PY'
 import socket
 sock = socket.socket()

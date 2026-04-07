@@ -4,6 +4,9 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PORT_STATE_FILE="$ROOT_DIR/artifacts/ports.env"
 
+. "$ROOT_DIR/scripts/config_env.sh"
+load_config_env
+
 PORT_VARIABLES=(
   HOST_KAFKA_PORT
   HOST_REDPANDA_ADMIN_PORT
@@ -19,14 +22,14 @@ ASSIGNED_PORTS=()
 
 default_port_for() {
   case "$1" in
-    HOST_KAFKA_PORT) echo 39092 ;;
-    HOST_REDPANDA_ADMIN_PORT) echo 9644 ;;
-    HOST_CONSOLE_PORT) echo 8080 ;;
-    HOST_GRAFANA_PORT) echo 3000 ;;
-    HOST_FLINK_PORT) echo 8081 ;;
-    HOST_QUESTDB_HTTP_PORT) echo 9000 ;;
-    HOST_QUESTDB_ILP_PORT) echo 9009 ;;
-    HOST_QUESTDB_PG_PORT) echo 8812 ;;
+    HOST_KAFKA_PORT) echo "${HOST_KAFKA_PORT:-39092}" ;;
+    HOST_REDPANDA_ADMIN_PORT) echo "${HOST_REDPANDA_ADMIN_PORT:-9644}" ;;
+    HOST_CONSOLE_PORT) echo "${HOST_CONSOLE_PORT:-8080}" ;;
+    HOST_GRAFANA_PORT) echo "${HOST_GRAFANA_PORT:-3000}" ;;
+    HOST_FLINK_PORT) echo "${HOST_FLINK_PORT:-8081}" ;;
+    HOST_QUESTDB_HTTP_PORT) echo "${HOST_QUESTDB_HTTP_PORT:-9000}" ;;
+    HOST_QUESTDB_ILP_PORT) echo "${HOST_QUESTDB_ILP_PORT:-9009}" ;;
+    HOST_QUESTDB_PG_PORT) echo "${HOST_QUESTDB_PG_PORT:-8812}" ;;
     *)
       echo "Unknown port variable: $1" >&2
       return 1

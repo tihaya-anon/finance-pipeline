@@ -11,6 +11,7 @@ requires-python = ">=3.10"
 dependencies = [
   "kafka-python>=2.2.15,<3.0.0",
   "websockets>=15.0.1,<16.0.0",
+  "PyYAML>=6.0.2,<7.0.0",
 ]
 
 [dependency-groups]
@@ -24,6 +25,9 @@ strategy-service = "finance_pipeline.strategy_service:main"
 portfolio-service = "finance_pipeline.portfolio_service:main"
 stream-binance = "finance_pipeline.binance_source:main"
 stream-onchain = "finance_pipeline.onchain_source:main"
+capture-onchain = "finance_pipeline.capture_onchain:main"
+generate-synthetic-fixture = "finance_pipeline.synthetic_fixture:main"
+config-export = "finance_pipeline.repo_config:main"
 questdb-sink = "finance_pipeline.questdb_sink:main"
 
 [tool.setuptools.packages.find]

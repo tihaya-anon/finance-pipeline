@@ -4,6 +4,9 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
+. "$ROOT_DIR/scripts/config_env.sh"
+load_config_env
+
 echo "waiting for Redpanda..."
 until docker compose exec -T redpanda rpk cluster info >/dev/null 2>&1; do
   sleep 2

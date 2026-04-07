@@ -1,35 +1,15 @@
 SHELL := /bin/bash
 
--include artifacts/ports.env
+CONFIG_FILE ?= config/development.yaml
+export FINANCE_PIPELINE_CONFIG := $(CONFIG_FILE)
 
-HOST_KAFKA_PORT ?= 39092
-HOST_REDPANDA_ADMIN_PORT ?= 9644
-HOST_CONSOLE_PORT ?= 8080
-HOST_GRAFANA_PORT ?= 3000
-HOST_FLINK_PORT ?= 8081
-HOST_QUESTDB_HTTP_PORT ?= 9000
-HOST_QUESTDB_ILP_PORT ?= 9009
-HOST_QUESTDB_PG_PORT ?= 8812
-KAFKA_BOOTSTRAP_SERVERS ?= localhost:$(HOST_KAFKA_PORT)
-DEV_TOPIC_RETENTION_MS ?= 3600000
-DEV_QUESTDB_TTL ?= 6 HOURS
+CONFIG_ENV = . ./scripts/config_env.sh && load_config_env
 
-export HOST_KAFKA_PORT
-export HOST_REDPANDA_ADMIN_PORT
-export HOST_CONSOLE_PORT
-export HOST_GRAFANA_PORT
-export HOST_FLINK_PORT
-export HOST_QUESTDB_HTTP_PORT
-export HOST_QUESTDB_ILP_PORT
-export HOST_QUESTDB_PG_PORT
-export KAFKA_BOOTSTRAP_SERVERS
-export DEV_TOPIC_RETENTION_MS
-export DEV_QUESTDB_TTL
-
-.PHONY: help install test mvp dev docker stop reset clean-data retention replay replay-fast binance onchain compose-config ports
+.PHONY: help install test mvp dev docker stop reset clean-data retention replay replay-fast binance onchain capture-onchain generate-synthetic replay-synthetic compose-config ports config-show
 
 help:
 	@echo "Targets:"
+	@echo "  make config-show   - print YAML-derived runtime config"
 	@echo "  make install       - sync Python deps with uv"
 	@echo "  make test          - run Python tests"
 	@echo "  make mvp           - run the bounded MVP flow"
@@ -41,67 +21,84 @@ help:
 	@echo "  make retention     - apply topic retention, set RETENTION_MS=..."
 	@echo "  make replay        - replay sample data"
 	@echo "  make replay-fast   - replay sample data faster"
+	@echo "  make generate-synthetic - generate a local synthetic CSV fixture"
+	@echo "  make replay-synthetic   - generate then replay the synthetic fixture"
 	@echo "  make binance       - stream live Binance aggTrade data"
 	@echo "  make onchain       - stream EVM AMM swap logs into Kafka"
+	@echo "  make capture-onchain - capture onchain swap logs into a local fixture"
 	@echo "  make compose-config- print docker compose config with active ports"
 	@echo "  make ports         - show current host port mapping values"
 	@echo ""
 	@echo "Example:"
-	@echo "  make dev HOST_QUESTDB_HTTP_PORT=19000 HOST_GRAFANA_PORT=13000"
+	@echo "  make dev CONFIG_FILE=config/development.yaml"
 	@echo ""
-	@echo "Ports are auto-selected and persisted in artifacts/ports.env."
-	@echo "Dev retention defaults: DEV_TOPIC_RETENTION_MS=$(DEV_TOPIC_RETENTION_MS), DEV_QUESTDB_TTL=$(DEV_QUESTDB_TTL)"
+	@echo "Most runtime defaults now come from $(CONFIG_FILE)."
+
+config-show:
+	@$(CONFIG_ENV) && uv --directory app run config-export --config "$$FINANCE_PIPELINE_CONFIG" --format json
 
 install:
-	uv --directory app sync --group dev
+	@$(CONFIG_ENV) && uv --directory app sync --group dev
 
 test:
-	uv --directory app run pytest
+	@$(CONFIG_ENV) && uv --directory app run pytest
 
 mvp:
-	./scripts/run_mvp.sh
+	@$(CONFIG_ENV) && ./scripts/run_mvp.sh
 
 dev:
-	./scripts/start_dev_stack.sh
+	@$(CONFIG_ENV) && ./scripts/start_dev_stack.sh
 
 docker: dev
 
 stop:
-	./scripts/stop_stack.sh
+	@$(CONFIG_ENV) && ./scripts/stop_stack.sh
 
 reset:
-	./scripts/reset_stack.sh
+	@$(CONFIG_ENV) && ./scripts/reset_stack.sh
 
 clean-data:
-	./scripts/reset_dev_data.sh
+	@$(CONFIG_ENV) && ./scripts/reset_dev_data.sh
 
 retention:
-	./scripts/apply_topic_retention.sh $${RETENTION_MS:-86400000}
+	@$(CONFIG_ENV) && ./scripts/apply_topic_retention.sh "$${RETENTION_MS:-$$DEV_TOPIC_RETENTION_MS}"
 
 replay:
-	uv --directory app run replay-market --speedup 50
+	@$(CONFIG_ENV) && uv --directory app run replay-market
 
 replay-fast:
-	uv --directory app run replay-market --speedup 200
+	@$(CONFIG_ENV) && uv --directory app run replay-market --speedup "$$REPLAY_FAST_SPEEDUP"
+
+generate-synthetic:
+	@$(CONFIG_ENV) && uv --directory app run generate-synthetic-fixture
+
+replay-synthetic:
+	@$(CONFIG_ENV) && uv --directory app run generate-synthetic-fixture && uv --directory app run replay-market --csv "$$SYNTHETIC_OUTPUT_CSV"
 
 binance:
-	uv --directory app run stream-binance
+	@$(CONFIG_ENV) && uv --directory app run stream-binance
 
 onchain:
-	uv --directory app run stream-onchain
+	@$(CONFIG_ENV) && uv --directory app run stream-onchain
+
+capture-onchain:
+	@$(CONFIG_ENV) && uv --directory app run capture-onchain
 
 compose-config:
-	docker compose config
+	@$(CONFIG_ENV) && docker compose config
 
 ports:
-	@echo "HOST_KAFKA_PORT=$(HOST_KAFKA_PORT)"
-	@echo "HOST_REDPANDA_ADMIN_PORT=$(HOST_REDPANDA_ADMIN_PORT)"
-	@echo "HOST_CONSOLE_PORT=$(HOST_CONSOLE_PORT)"
-	@echo "HOST_GRAFANA_PORT=$(HOST_GRAFANA_PORT)"
-	@echo "HOST_FLINK_PORT=$(HOST_FLINK_PORT)"
-	@echo "HOST_QUESTDB_HTTP_PORT=$(HOST_QUESTDB_HTTP_PORT)"
-	@echo "HOST_QUESTDB_ILP_PORT=$(HOST_QUESTDB_ILP_PORT)"
-	@echo "HOST_QUESTDB_PG_PORT=$(HOST_QUESTDB_PG_PORT)"
-	@echo "KAFKA_BOOTSTRAP_SERVERS=$(KAFKA_BOOTSTRAP_SERVERS)"
-	@echo "DEV_TOPIC_RETENTION_MS=$(DEV_TOPIC_RETENTION_MS)"
-	@echo "DEV_QUESTDB_TTL=$(DEV_QUESTDB_TTL)"
+	@$(CONFIG_ENV) && . ./scripts/port_state.sh && load_saved_ports && \
+	echo "HOST_KAFKA_PORT=$${HOST_KAFKA_PORT}" && \
+	echo "HOST_REDPANDA_ADMIN_PORT=$${HOST_REDPANDA_ADMIN_PORT}" && \
+	echo "HOST_CONSOLE_PORT=$${HOST_CONSOLE_PORT}" && \
+	echo "HOST_GRAFANA_PORT=$${HOST_GRAFANA_PORT}" && \
+	echo "HOST_FLINK_PORT=$${HOST_FLINK_PORT}" && \
+	echo "HOST_QUESTDB_HTTP_PORT=$${HOST_QUESTDB_HTTP_PORT}" && \
+	echo "HOST_QUESTDB_ILP_PORT=$${HOST_QUESTDB_ILP_PORT}" && \
+	echo "HOST_QUESTDB_PG_PORT=$${HOST_QUESTDB_PG_PORT}" && \
+	echo "KAFKA_BOOTSTRAP_SERVERS=$${KAFKA_BOOTSTRAP_SERVERS}" && \
+	echo "DEV_TOPIC_RETENTION_MS=$${DEV_TOPIC_RETENTION_MS}" && \
+	echo "DEV_QUESTDB_TTL=$${DEV_QUESTDB_TTL}" && \
+	echo "REPLAY_FIXTURE_CSV=$${REPLAY_FIXTURE_CSV}" && \
+	echo "SYNTHETIC_OUTPUT_CSV=$${SYNTHETIC_OUTPUT_CSV}"

@@ -3,6 +3,12 @@
 ## Install
 
 ```bash
+make install
+```
+
+或直接：
+
+```bash
 uv --directory app sync --group dev
 ```
 
@@ -21,13 +27,14 @@ uv --directory app run pytest
 ## Start Long-Running Dev Mode
 
 ```bash
-./scripts/start_dev_stack.sh
+make dev
 ```
 
 这个模式会：
 
 - 启动 Redpanda 和 Flink
 - 启动 Redpanda Console、QuestDB、Grafana
+- 从 `config/development.yaml` 加载运行参数
 - 自动选择可用宿主机端口并保存到 `artifacts/ports.env`
 - 初始化 QuestDB dashboard 依赖表结构，并在开发模式下重建分析表
 - 提交 Flink SQL 作业
@@ -44,13 +51,37 @@ uv --directory app run pytest
 推样例数据：
 
 ```bash
-uv --directory app run replay-market --speedup 50
+make replay
+```
+
+生成 synthetic fixture：
+
+```bash
+make generate-synthetic
+```
+
+回放 synthetic fixture：
+
+```bash
+make replay-synthetic
+```
+
+抓取链上 fixture：
+
+```bash
+make capture-onchain
 ```
 
 推 Binance 实时数据：
 
 ```bash
-uv --directory app run stream-binance
+make binance
+```
+
+推 EVM 链上实时 swap：
+
+```bash
+make onchain
 ```
 
 默认候选端口：
@@ -63,24 +94,11 @@ uv --directory app run stream-binance
 - QuestDB PGWire: `localhost:${HOST_QUESTDB_PG_PORT:-8812}`
 - Grafana: `localhost:${HOST_GRAFANA_PORT:-3000}`
 
-如果端口冲突：
-
-```bash
-HOST_KAFKA_PORT=49092 \
-HOST_CONSOLE_PORT=18080 \
-HOST_QUESTDB_HTTP_PORT=19000 \
-HOST_QUESTDB_ILP_PORT=19009 \
-HOST_QUESTDB_PG_PORT=18812 \
-HOST_GRAFANA_PORT=13000 \
-HOST_FLINK_PORT=18081 \
-./scripts/start_dev_stack.sh
-```
-
-不传环境变量时，脚本会自动向上扫描空闲端口；成功启动后可用 `make ports` 查看最终映射。
+不修改命令行参数时，脚本会直接读取 `config/development.yaml`；成功启动后可用 `make config-show` 与 `make ports` 查看最终配置和实际端口映射。
 开发环境还会自动清理数据：
 
-- Redpanda topics 默认保留 `1` 小时，由 `DEV_TOPIC_RETENTION_MS` 控制
-- QuestDB 分析表按 `HOUR` 分区，默认保留 `6` 小时，由 `DEV_QUESTDB_TTL` 控制
+- Redpanda topics 默认保留 `1` 小时，由 YAML 中 `retention.topic_retention_ms` 控制
+- QuestDB 分析表按 `HOUR` 分区，默认保留 `6` 小时，由 YAML 中 `retention.questdb_ttl` 控制
 - 每次 `make dev` 会重建 QuestDB 分析表，避免开发过程无限积累旧数据
 
 ## Outputs
@@ -94,13 +112,13 @@ HOST_FLINK_PORT=18081 \
 ## Shutdown
 
 ```bash
-./scripts/stop_stack.sh
+make stop
 ```
 
 ## Full Reset
 
 ```bash
-./scripts/reset_stack.sh
+make reset
 ```
 
 如果还启动了本地后台 Python 服务：
@@ -134,3 +152,4 @@ Kafka/Redpanda 原生支持 retention，不需要额外写应用层清理器。
 - 当前策略阈值较高，样例数据默认多为 `flat`
 - 最后一个窗口是否输出取决于事件时间与 watermark 推进
 - Flink 特征目前只使用简单聚合，不包含盘口或波动率细节
+- 当前推荐开发流是 fixture-first：优先用本地样本和 synthetic 数据复现问题，再按需接真实实时源

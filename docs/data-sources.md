@@ -30,8 +30,9 @@ Binance 官方文档说明：
 
 ## Recommended Runtime Split
 
-- 本地开发 / dashboard 演示：Binance Spot `aggTrade`
-- 回放测试：仓库自带 CSV 样例，保证环境稳定
+- 本地开发 / dashboard 演示：优先使用本地 fixture 和 synthetic data
+- 回放测试：仓库自带 CSV 样例或 `make generate-synthetic` 产出的 fixture
+- 真实链上采样：`make capture-onchain` 抓一小段样本再本地回放
 - 后续扩展到衍生品：优先接 Bybit public trade / orderbook，再考虑 Binance Futures
 
 ## Alternative
@@ -51,8 +52,10 @@ Binance 官方文档说明：
 仓库现在也支持直接接 EVM AMM `Swap` 日志：
 
 - 入口：`make onchain`
+- 采样入口：`make capture-onchain`
 - 当前解码模型：Uniswap V2 风格 pair `Swap` 事件
 - 输出方式：把链上 swap 统一映射成现有 `market_ticks` schema，后续 Flink / strategy / QuestDB / Grafana 复用原链路
+- 推荐工作流：先抓样本落到 `data/fixtures/onchain/`，开发时再用 `make replay` 或专门 replay 命令重放
 
 最小配置：
 
@@ -72,3 +75,12 @@ make onchain \
 - 只支持单个 pair
 - 只支持 Uniswap V2 风格 `Swap(address,uint256,uint256,uint256,uint256,address)`
 - 价格默认按 `token0/token1` 中的 `base/quote` 方向计算
+
+## Config Management
+
+所有 source 默认参数现在统一放在 `config/development.yaml`：
+
+- `sources.replay`: 默认回放 fixture 与速度
+- `sources.synthetic`: synthetic fixture 输出路径与生成参数
+- `sources.binance`: Binance 公共流地址
+- `sources.onchain`: 链上 WS/HTTP endpoint、pair、symbol、decimals、capture 输出路径
