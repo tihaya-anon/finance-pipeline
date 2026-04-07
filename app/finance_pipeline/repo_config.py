@@ -14,6 +14,12 @@ PACKAGE_ROOT = Path(__file__).resolve().parent
 APP_ROOT = PACKAGE_ROOT.parent
 REPO_ROOT = APP_ROOT.parent
 DEFAULT_CONFIG_PATH = REPO_ROOT / "config" / "development.yaml"
+SECRETS_FILE_SUFFIX = ".secrets.yaml"
+SENSITIVE_ENV_KEYS = {
+    "BINANCE_STREAM_URL",
+    "EVM_WS_URL",
+    "EVM_HTTP_URL",
+}
 
 CONFIG_ENV_MAPPINGS = {
     "ports.kafka": "HOST_KAFKA_PORT",
@@ -64,16 +70,50 @@ def resolve_config_path(config_path: str | None = None) -> Path:
     return path
 
 
-def load_repo_config(config_path: str | None = None) -> dict[str, Any]:
-    path = resolve_config_path(config_path)
-    if not path.exists():
-        raise FileNotFoundError(f"Config file not found: {path}")
+def resolve_secrets_path(config_path: str | None = None, secrets_path: str | None = None) -> Path:
+    configured_path = secrets_path or os.getenv("FINANCE_PIPELINE_SECRETS")
+    if configured_path:
+        path = Path(configured_path)
+        if not path.is_absolute():
+            path = REPO_ROOT / path
+        return path
 
+    base_config_path = resolve_config_path(config_path)
+    if base_config_path.suffix == ".yaml":
+        return base_config_path.with_name(f"{base_config_path.stem}{SECRETS_FILE_SUFFIX}")
+    return base_config_path.with_name(f"{base_config_path.name}{SECRETS_FILE_SUFFIX}")
+
+
+def load_yaml_mapping(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as handle:
         loaded = yaml.safe_load(handle) or {}
 
     if not isinstance(loaded, dict):
         raise ValueError(f"Config file must contain a YAML mapping: {path}")
+    return loaded
+
+
+def deep_merge_dicts(base: dict[str, Any], overlay: dict[str, Any]) -> dict[str, Any]:
+    merged = dict(base)
+    for key, value in overlay.items():
+        base_value = merged.get(key)
+        if isinstance(base_value, dict) and isinstance(value, dict):
+            merged[key] = deep_merge_dicts(base_value, value)
+            continue
+        merged[key] = value
+    return merged
+
+
+def load_repo_config(config_path: str | None = None, secrets_path: str | None = None) -> dict[str, Any]:
+    path = resolve_config_path(config_path)
+    if not path.exists():
+        raise FileNotFoundError(f"Config file not found: {path}")
+
+    loaded = load_yaml_mapping(path)
+    resolved_secrets_path = resolve_secrets_path(config_path, secrets_path)
+    if resolved_secrets_path.exists():
+        loaded = deep_merge_dicts(loaded, load_yaml_mapping(resolved_secrets_path))
+
     return loaded
 
 
@@ -93,11 +133,14 @@ def resolve_repo_path(raw_path: str) -> Path:
     return REPO_ROOT / path
 
 
-def build_config_env(config_path: str | None = None) -> dict[str, str]:
-    config = load_repo_config(config_path)
+def build_config_env(config_path: str | None = None, secrets_path: str | None = None) -> dict[str, str]:
+    config = load_repo_config(config_path, secrets_path)
+    resolved_secrets_path = resolve_secrets_path(config_path, secrets_path)
     env_values = {
         "FINANCE_PIPELINE_CONFIG": str(resolve_config_path(config_path)),
     }
+    if resolved_secrets_path.exists() or secrets_path or os.getenv("FINANCE_PIPELINE_SECRETS"):
+        env_values["FINANCE_PIPELINE_SECRETS"] = str(resolved_secrets_path)
 
     for dotted_path, env_name in CONFIG_ENV_MAPPINGS.items():
         value = get_config_value(config, dotted_path)
@@ -112,24 +155,37 @@ def build_config_env(config_path: str | None = None) -> dict[str, str]:
     return env_values
 
 
-def format_shell_exports(config_path: str | None = None) -> str:
-    env_values = build_config_env(config_path)
+def redact_sensitive_env(env_values: dict[str, str]) -> dict[str, str]:
+    redacted = dict(env_values)
+    for key in SENSITIVE_ENV_KEYS:
+        if key in redacted and redacted[key]:
+            redacted[key] = "<redacted>"
+    return redacted
+
+
+def format_shell_exports(config_path: str | None = None, secrets_path: str | None = None) -> str:
+    env_values = build_config_env(config_path, secrets_path)
     return "\n".join(f"export {key}={shlex.quote(value)}" for key, value in sorted(env_values.items()))
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Render repository config into shell-friendly env exports.")
     parser.add_argument("--config", default=os.getenv("FINANCE_PIPELINE_CONFIG"))
+    parser.add_argument("--secrets", default=os.getenv("FINANCE_PIPELINE_SECRETS"))
     parser.add_argument("--format", choices=["shell", "json"], default="shell")
+    parser.add_argument("--reveal-secrets", action="store_true")
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
     if args.format == "json":
-        print(json.dumps(build_config_env(args.config), indent=2, sort_keys=True))
+        env_values = build_config_env(args.config, args.secrets)
+        if not args.reveal_secrets:
+            env_values = redact_sensitive_env(env_values)
+        print(json.dumps(env_values, indent=2, sort_keys=True))
         return
-    print(format_shell_exports(args.config))
+    print(format_shell_exports(args.config, args.secrets))
 
 
 if __name__ == "__main__":

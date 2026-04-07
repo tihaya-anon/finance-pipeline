@@ -13,3 +13,4 @@ data/fixtures/generated/*
 !data/fixtures/generated/.gitkeep
 data/fixtures/onchain/*
 !data/fixtures/onchain/.gitkeep
+config/*.secrets.yaml

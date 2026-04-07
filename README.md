@@ -58,6 +58,14 @@ make test
 make dev CONFIG_FILE=config/development.yaml
 ```
 
+敏感配置建议写到本地 secrets 文件：
+
+```bash
+cp config/development.secrets.example.yaml config/development.secrets.yaml
+```
+
+`config/development.secrets.yaml` 已被 `.gitignore` 忽略，shell 脚本和 Python 入口会自动合并它。
+
 启动完整 MVP：
 
 ```bash
@@ -133,6 +141,7 @@ make reset
 ## 运行说明
 
 - 运行参数默认从 `config/development.yaml` 读取，Python source 和 shell 脚本共用同一份配置
+- 敏感字段可放到 `config/development.secrets.yaml`，它会覆盖主配置中的同名字段
 - Kafka 对宿主机默认暴露为 `localhost:39092`
 - 启动时会优先复用 `artifacts/ports.env` 中上次成功的端口；如果端口被占用，会自动向上扫描空闲端口
 - 需要查看当前映射时运行 `make ports`
@@ -147,6 +156,7 @@ make reset
 - QuestDB 表结构会在启动时自动初始化；如果还没回放或接入实时数据，Grafana 会显示空图而不是报表不存在
 - 推荐开发 workflow 是 `generate-synthetic` / `replay` / `replay-synthetic` / `capture-onchain`，真实 `make onchain` 只在需要时启用
 - `make onchain` 与 `make capture-onchain` 当前按 Uniswap V2 风格 `Swap` 事件把链上成交映射为 `market_ticks`
+- `sources.onchain.pair_address` 必须填写 pair 合约地址，不是 token 地址；当前实现默认把 token0 视为 `base`、token1 视为 `quote`
 - 常用入口都收在 `Makefile`
 
 ## 文档

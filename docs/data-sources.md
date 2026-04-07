@@ -84,3 +84,9 @@ make onchain \
 - `sources.synthetic`: synthetic fixture 输出路径与生成参数
 - `sources.binance`: Binance 公共流地址
 - `sources.onchain`: 链上 WS/HTTP endpoint、pair、symbol、decimals、capture 输出路径
+
+敏感字段建议放到 `config/development.secrets.yaml`：
+
+- `sources.onchain.ws_url`
+- `sources.onchain.http_url`
+- 如有需要，也可以把 `pair_address` 一并放到 secrets 文件
