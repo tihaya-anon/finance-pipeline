@@ -37,11 +37,12 @@ def parse_args() -> argparse.Namespace:
 def capture_recent_ticks(args: argparse.Namespace, timestamp_resolver: BlockTimestampResolver) -> list:
     latest_block = timestamp_resolver.latest_block_number()
     from_block = max(latest_block - args.lookback_blocks, 0)
-    recent_logs = timestamp_resolver.fetch_logs(
+    recent_logs = timestamp_resolver.fetch_logs_in_chunks(
         address=args.pair_address,
         topics=[UNISWAP_V2_SWAP_TOPIC],
         from_block=from_block,
         to_block=latest_block,
+        block_step=10,
     )
     pair = validate_args(args)
     ticks = []

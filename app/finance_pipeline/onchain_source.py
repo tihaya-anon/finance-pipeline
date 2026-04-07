@@ -184,6 +184,33 @@ class BlockTimestampResolver:
             raise RuntimeError(f"Unexpected eth_getLogs result type: {type(result)!r}")
         return result
 
+    def fetch_logs_in_chunks(
+        self,
+        *,
+        address: str,
+        topics: list[str],
+        from_block: int,
+        to_block: int,
+        block_step: int,
+    ) -> list[dict[str, Any]]:
+        if block_step <= 0:
+            raise ValueError("block_step must be positive")
+
+        logs: list[dict[str, Any]] = []
+        current_from = from_block
+        while current_from <= to_block:
+            current_to = min(current_from + block_step - 1, to_block)
+            logs.extend(
+                self.fetch_logs(
+                    address=address,
+                    topics=topics,
+                    from_block=current_from,
+                    to_block=current_to,
+                )
+            )
+            current_from = current_to + 1
+        return logs
+
 
 def sort_evm_logs(logs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return sorted(
