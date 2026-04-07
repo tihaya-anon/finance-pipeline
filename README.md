@@ -83,7 +83,7 @@ make dev
 
 常用入口：
 
-- `make ports`
+- `make net`
 - Redpanda Console: `http://127.0.0.1:<HOST_CONSOLE_PORT>`
 - Grafana: `http://127.0.0.1:<HOST_GRAFANA_PORT>`
 - QuestDB Web Console: `http://127.0.0.1:<HOST_QUESTDB_HTTP_PORT>`
@@ -144,9 +144,9 @@ make reset
 - 敏感字段可放到 `config/development.secrets.yaml`，它会覆盖主配置中的同名字段
 - Kafka 对宿主机默认暴露为 `localhost:39092`
 - 启动时会优先复用 `artifacts/ports.env` 中上次成功的端口；如果端口被占用，会自动向上扫描空闲端口
-- 需要查看当前映射时运行 `make ports`
+- 需要查看所有 UI / 数据接口时运行 `make net`
 - 需要查看当前 YAML 配置映射时运行 `make config-show`
-- Flink Web UI 地址由 `make ports` 输出中的 `HOST_FLINK_PORT` 决定
+- Flink Web UI 地址由 `make net` 输出中的 `Flink Web UI` 决定
 - 开发环境默认会在 `make dev` 时重建 QuestDB 分析表，并用 YAML 中的 retention 配置自动清理数据
 - Flink SQL 作业定义在 `sql/market_features.sql`
 - 示例数据覆盖 6 个 5 秒窗口，脚本默认消费 6 条特征和 6 条信号
@@ -154,6 +154,7 @@ make reset
 - 组合快照会额外写入 Kafka topic `portfolio_snapshots`
 - Grafana 默认会自动加载 `Finance Pipeline` dashboard
 - QuestDB 表结构会在启动时自动初始化；如果还没回放或接入实时数据，Grafana 会显示空图而不是报表不存在
+- `make replay` 默认会把 fixture 时间平移到当前时间附近，便于 Grafana 在默认 `now-15m` 窗口里直接看到结果
 - 推荐开发 workflow 是 `generate-synthetic` / `replay` / `replay-synthetic` / `capture-onchain`，真实 `make onchain` 只在需要时启用
 - `make onchain` 与 `make capture-onchain` 当前按 Uniswap V2 风格 `Swap` 事件把链上成交映射为 `market_ticks`
 - `sources.onchain.pair_address` 必须填写 pair 合约地址，不是 token 地址；当前实现默认把 token0 视为 `base`、token1 视为 `quote`

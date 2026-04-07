@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import time
 from pathlib import Path
 
@@ -19,15 +20,41 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--speedup", type=float, default=SETTINGS.replay_speedup, help="Replay speed multiplier.")
     parser.add_argument(
+        "--shift-to-now",
+        action="store_true",
+        help="Shift fixture timestamps so the last tick lands near current UTC time.",
+    )
+    parser.add_argument(
         "--bootstrap-servers",
         default=SETTINGS.bootstrap_servers,
         help="Kafka bootstrap servers.",
     )
     parser.add_argument("--topic", default=SETTINGS.ticks_topic, help="Target topic for tick events.")
     return parser.parse_args()
+
+
+def shift_ticks_to_now(ticks: list[MarketTick]) -> list[MarketTick]:
+    if not ticks:
+        return ticks
+
+    offset = datetime.now(timezone.utc) - ticks[-1].event_time
+    return [
+        MarketTick(
+            symbol=tick.symbol,
+            event_time=tick.event_time + offset,
+            price=tick.price,
+            quantity=tick.quantity,
+            side=tick.side,
+        )
+        for tick in ticks
+    ]
+
+
 def main() -> None:
     args = parse_args()
     ticks = load_ticks(Path(args.csv))
+    if args.shift_to_now:
+        ticks = shift_ticks_to_now(ticks)
     producer = build_producer(args.bootstrap_servers)
 
     previous_tick: MarketTick | None = None

@@ -42,7 +42,7 @@ make dev
 
 可视化地址：
 
-- 运行 `make ports`
+- 运行 `make net`
 - Redpanda Console: `http://127.0.0.1:<HOST_CONSOLE_PORT>`
 - Grafana: `http://127.0.0.1:<HOST_GRAFANA_PORT>`
 - QuestDB: `http://127.0.0.1:<HOST_QUESTDB_HTTP_PORT>`
@@ -53,6 +53,8 @@ make dev
 ```bash
 make replay
 ```
+
+`make replay` 会把 fixture 时间平移到当前时间附近，所以 Grafana 默认 `now-15m` 视图能直接看到新数据。
 
 生成 synthetic fixture：
 
@@ -94,7 +96,7 @@ make onchain
 - QuestDB PGWire: `localhost:${HOST_QUESTDB_PG_PORT:-8812}`
 - Grafana: `localhost:${HOST_GRAFANA_PORT:-3000}`
 
-不修改命令行参数时，脚本会直接读取 `config/development.yaml`；成功启动后可用 `make config-show` 与 `make ports` 查看最终配置和实际端口映射。
+不修改命令行参数时，脚本会直接读取 `config/development.yaml`；成功启动后可用 `make config-show` 与 `make net` 查看最终配置和实际网络接口。
 开发环境还会自动清理数据：
 
 - Redpanda topics 默认保留 `1` 小时，由 YAML 中 `retention.topic_retention_ms` 控制

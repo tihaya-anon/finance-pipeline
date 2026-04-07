@@ -5,7 +5,7 @@ export FINANCE_PIPELINE_CONFIG := $(CONFIG_FILE)
 
 CONFIG_ENV = . ./scripts/config_env.sh && load_config_env
 
-.PHONY: help install test mvp dev docker stop reset clean-data retention replay replay-fast binance onchain capture-onchain generate-synthetic replay-synthetic compose-config ports config-show
+.PHONY: help install test mvp dev docker stop reset clean-data retention replay replay-fast binance onchain capture-onchain generate-synthetic replay-synthetic compose-config net config-show
 
 help:
 	@echo "Targets:"
@@ -27,7 +27,7 @@ help:
 	@echo "  make onchain       - stream EVM AMM swap logs into Kafka"
 	@echo "  make capture-onchain - capture onchain swap logs into a local fixture"
 	@echo "  make compose-config- print docker compose config with active ports"
-	@echo "  make ports         - show current host port mapping values"
+	@echo "  make net           - show UI and data network interfaces"
 	@echo ""
 	@echo "Example:"
 	@echo "  make dev CONFIG_FILE=config/development.yaml"
@@ -64,10 +64,10 @@ retention:
 	@$(CONFIG_ENV) && ./scripts/apply_topic_retention.sh "$${RETENTION_MS:-$$DEV_TOPIC_RETENTION_MS}"
 
 replay:
-	@$(CONFIG_ENV) && uv --directory app run replay-market
+	@$(CONFIG_ENV) && uv --directory app run replay-market --shift-to-now
 
 replay-fast:
-	@$(CONFIG_ENV) && uv --directory app run replay-market --speedup "$$REPLAY_FAST_SPEEDUP"
+	@$(CONFIG_ENV) && uv --directory app run replay-market --shift-to-now --speedup "$$REPLAY_FAST_SPEEDUP"
 
 generate-synthetic:
 	@$(CONFIG_ENV) && uv --directory app run generate-synthetic-fixture
@@ -87,18 +87,23 @@ capture-onchain:
 compose-config:
 	@$(CONFIG_ENV) && docker compose config
 
-ports:
+net:
 	@$(CONFIG_ENV) && . ./scripts/port_state.sh && load_saved_ports && \
-	echo "HOST_KAFKA_PORT=$${HOST_KAFKA_PORT}" && \
-	echo "HOST_REDPANDA_ADMIN_PORT=$${HOST_REDPANDA_ADMIN_PORT}" && \
-	echo "HOST_CONSOLE_PORT=$${HOST_CONSOLE_PORT}" && \
-	echo "HOST_GRAFANA_PORT=$${HOST_GRAFANA_PORT}" && \
-	echo "HOST_FLINK_PORT=$${HOST_FLINK_PORT}" && \
-	echo "HOST_QUESTDB_HTTP_PORT=$${HOST_QUESTDB_HTTP_PORT}" && \
-	echo "HOST_QUESTDB_ILP_PORT=$${HOST_QUESTDB_ILP_PORT}" && \
-	echo "HOST_QUESTDB_PG_PORT=$${HOST_QUESTDB_PG_PORT}" && \
-	echo "KAFKA_BOOTSTRAP_SERVERS=$${KAFKA_BOOTSTRAP_SERVERS}" && \
-	echo "DEV_TOPIC_RETENTION_MS=$${DEV_TOPIC_RETENTION_MS}" && \
-	echo "DEV_QUESTDB_TTL=$${DEV_QUESTDB_TTL}" && \
-	echo "REPLAY_FIXTURE_CSV=$${REPLAY_FIXTURE_CSV}" && \
-	echo "SYNTHETIC_OUTPUT_CSV=$${SYNTHETIC_OUTPUT_CSV}"
+	echo "UI Interfaces:" && \
+	echo "  Grafana:               http://127.0.0.1:$${HOST_GRAFANA_PORT}" && \
+	echo "  Redpanda Console:      http://127.0.0.1:$${HOST_CONSOLE_PORT}" && \
+	echo "  QuestDB Web Console:   http://127.0.0.1:$${HOST_QUESTDB_HTTP_PORT}" && \
+	echo "  Flink Web UI:          http://127.0.0.1:$${HOST_FLINK_PORT}" && \
+	echo "" && \
+	echo "Data Interfaces:" && \
+	echo "  Kafka Bootstrap:       $${KAFKA_BOOTSTRAP_SERVERS}" && \
+	echo "  Redpanda Admin API:    http://127.0.0.1:$${HOST_REDPANDA_ADMIN_PORT}" && \
+	echo "  QuestDB HTTP API:      http://127.0.0.1:$${HOST_QUESTDB_HTTP_PORT}/exec" && \
+	echo "  QuestDB ILP TCP:       127.0.0.1:$${HOST_QUESTDB_ILP_PORT}" && \
+	echo "  QuestDB PGWire:        postgresql://admin:quest@127.0.0.1:$${HOST_QUESTDB_PG_PORT}/qdb" && \
+	echo "" && \
+	echo "Runtime Defaults:" && \
+	echo "  Topic Retention:       $${DEV_TOPIC_RETENTION_MS} ms" && \
+	echo "  QuestDB TTL:           $${DEV_QUESTDB_TTL}" && \
+	echo "  Replay Fixture:        $${REPLAY_FIXTURE_CSV}" && \
+	echo "  Synthetic Fixture:     $${SYNTHETIC_OUTPUT_CSV}"
