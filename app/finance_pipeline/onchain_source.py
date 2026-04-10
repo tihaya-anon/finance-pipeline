@@ -121,6 +121,10 @@ def tick_from_swap_log(log: dict[str, Any], pair: PairConfig, block_timestamp: d
         price=float(price),
         quantity=float(quantity),
         side=side,
+        venue="evm",
+        instrument_type="spot",
+        base_asset=pair.base_symbol,
+        quote_asset=pair.quote_symbol,
     )
 
 
@@ -255,7 +259,7 @@ async def stream_onchain_swaps(args: argparse.Namespace) -> None:
 
                 block_timestamp = timestamp_resolver.resolve(log["blockHash"])
                 tick = tick_from_swap_log(log, pair, block_timestamp)
-                producer.send(args.topic, key=tick.symbol, value=tick.to_payload()).get(timeout=10)
+                producer.send(args.topic, key=tick.instrument_key, value=tick.to_payload()).get(timeout=10)
                 print(
                     f"streamed onchain tick: {tick.symbol} {tick.side} "
                     f"{tick.quantity:.6f} @ {tick.price:.6f} {pair.quote_symbol}"

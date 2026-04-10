@@ -6,7 +6,7 @@ from pathlib import Path
 import random
 
 from finance_pipeline.market_fixture import write_ticks
-from finance_pipeline.schemas import MarketTick, parse_utc_timestamp
+from finance_pipeline.schemas import MarketTick, infer_spot_asset_pair, parse_utc_timestamp
 from finance_pipeline.settings import SETTINGS
 
 
@@ -23,6 +23,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--volatility-bps", type=float, default=SETTINGS.synthetic_volatility_bps)
     parser.add_argument("--drift-bps", type=float, default=SETTINGS.synthetic_drift_bps)
     parser.add_argument("--seed", type=int, default=SETTINGS.synthetic_seed)
+    parser.add_argument("--venue", default="synthetic")
+    parser.add_argument("--instrument-type", default="spot")
+    parser.add_argument("--base-asset", default="")
+    parser.add_argument("--quote-asset", default="")
     return parser.parse_args(argv)
 
 
@@ -31,6 +35,12 @@ def build_synthetic_ticks(args: argparse.Namespace) -> list[MarketTick]:
     event_time = parse_utc_timestamp(args.start_time)
     price = args.start_price
     ticks: list[MarketTick] = []
+    base_asset = args.base_asset
+    quote_asset = args.quote_asset
+    if args.instrument_type == "spot" and (not base_asset or not quote_asset):
+        inferred_base_asset, inferred_quote_asset = infer_spot_asset_pair(args.symbol)
+        base_asset = base_asset or inferred_base_asset
+        quote_asset = quote_asset or inferred_quote_asset
 
     for _ in range(args.tick_count):
         move_bps = rng.gauss(args.drift_bps, args.volatility_bps)
@@ -44,6 +54,10 @@ def build_synthetic_ticks(args: argparse.Namespace) -> list[MarketTick]:
                 price=round(price, 6),
                 quantity=round(quantity, 6),
                 side=side,
+                venue=args.venue,
+                instrument_type=args.instrument_type,
+                base_asset=base_asset,
+                quote_asset=quote_asset,
             )
         )
         event_time += timedelta(milliseconds=args.interval_ms)

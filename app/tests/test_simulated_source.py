@@ -20,6 +20,10 @@ def test_generate_next_tick_produces_positive_price_and_quantity() -> None:
     )
 
     assert tick.symbol == "BTCUSDT"
+    assert tick.venue == "synthetic"
+    assert tick.instrument_type == "spot"
+    assert tick.base_asset == "BTC"
+    assert tick.quote_asset == "USDT"
     assert tick.price > 0
     assert tick.quantity > 0
     assert tick.side in {"buy", "sell"}

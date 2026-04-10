@@ -45,6 +45,10 @@ def shift_ticks_to_now(ticks: list[MarketTick]) -> list[MarketTick]:
             price=tick.price,
             quantity=tick.quantity,
             side=tick.side,
+            venue=tick.venue,
+            instrument_type=tick.instrument_type,
+            base_asset=tick.base_asset,
+            quote_asset=tick.quote_asset,
         )
         for tick in ticks
     ]
@@ -69,7 +73,7 @@ def main() -> None:
                 if sleep_seconds > 0:
                     time.sleep(sleep_seconds)
 
-            producer.send(args.topic, key=tick.symbol, value=tick.to_payload()).get(timeout=10)
+            producer.send(args.topic, key=tick.instrument_key, value=tick.to_payload()).get(timeout=10)
             previous_tick = tick
             sent_count += 1
             print(f"sent tick {sent_count}: {tick.symbol} {tick.price:.2f} @ {tick.event_time.isoformat()}")

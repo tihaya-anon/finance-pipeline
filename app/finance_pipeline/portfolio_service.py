@@ -48,12 +48,12 @@ def main() -> None:
                         # in-memory portfolio state and appends one snapshot.
                         signal = TradingSignal.from_payload(record.value)
                         snapshot = portfolio.apply_signal(signal)
-                        producer.send(args.target_topic, key=snapshot.symbol, value=snapshot.to_payload()).get(timeout=10)
+                        producer.send(args.target_topic, key=snapshot.instrument_key, value=snapshot.to_payload()).get(timeout=10)
                         handle.write(json.dumps(snapshot.to_payload(), separators=(",", ":")) + "\n")
                         handle.flush()
                         processed += 1
                         print(
-                            f"portfolio {processed}: {snapshot.symbol} position={snapshot.current_position} "
+                            f"portfolio {processed}: {snapshot.symbol} position={snapshot.current_position_size:.4f} "
                             f"cash={snapshot.cash:.2f} equity={snapshot.equity:.2f}"
                         )
                         if args.max_messages > 0 and processed >= args.max_messages:

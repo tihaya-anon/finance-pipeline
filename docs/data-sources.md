@@ -36,6 +36,21 @@ Binance 官方文档说明：
 - 真实链上采样：`make capture-onchain` 抓一小段样本再本地回放
 - 后续扩展到衍生品：优先接 Bybit public trade / orderbook，再考虑 Binance Futures
 
+## Normalized Instrument Metadata
+
+不同 source 现在都会尽量把 tick 映射到统一的 instrument metadata：
+
+- `symbol`: 对外展示与兼容旧逻辑的交易对标识
+- `venue`: 例如 `binance`、`evm`、`synthetic`
+- `instrument_type`: 当前默认 `spot`
+- `base_asset` / `quote_asset`: 能明确拆分时就填充，供后续多标的和风险层使用
+
+当前 source 填充策略：
+
+- Binance `aggTrade`: 自动推断 `BTCUSDT -> base=BTC, quote=USDT`
+- On-chain AMM swap: 直接使用配置里的 `base_symbol` / `quote_symbol`
+- Synthetic / simulate: 默认按 symbol 推断，必要时可手动覆盖
+
 ## Alternative
 
 如果后面更偏衍生品，Bybit 也很适合：

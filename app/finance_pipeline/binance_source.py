@@ -26,7 +26,7 @@ async def stream_binance(args: argparse.Namespace) -> None:
             async for raw_message in websocket:
                 payload = json.loads(raw_message)
                 tick = MarketTick.from_binance_agg_trade(payload)
-                producer.send(args.topic, key=tick.symbol, value=tick.to_payload()).get(timeout=10)
+                producer.send(args.topic, key=tick.instrument_key, value=tick.to_payload()).get(timeout=10)
                 print(f"streamed tick: {tick.symbol} {tick.price:.2f} @ {tick.event_time.isoformat()}")
     finally:
         producer.flush()

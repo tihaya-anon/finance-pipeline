@@ -8,7 +8,7 @@ import time
 
 from finance_pipeline.kafka_utils import build_producer
 from finance_pipeline.repo_config import get_config_value, load_repo_config
-from finance_pipeline.schemas import MarketTick
+from finance_pipeline.schemas import MarketTick, infer_spot_asset_pair
 from finance_pipeline.settings import SETTINGS
 
 
@@ -38,6 +38,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--bootstrap-servers", default=SETTINGS.bootstrap_servers)
     parser.add_argument("--topic", default=SETTINGS.ticks_topic)
     parser.add_argument("--max-ticks", type=int, default=0, help="Stop after N ticks; 0 means run forever.")
+    parser.add_argument("--venue", default="synthetic")
+    parser.add_argument("--instrument-type", default="spot")
+    parser.add_argument("--base-asset", default="")
+    parser.add_argument("--quote-asset", default="")
     return parser.parse_args()
 
 
@@ -75,7 +79,15 @@ def generate_next_tick(
     current_price: float,
     rng: random.Random,
     scenario: SyntheticScenario,
+    venue: str = "synthetic",
+    instrument_type: str = "spot",
+    base_asset: str = "",
+    quote_asset: str = "",
 ) -> MarketTick:
+    if instrument_type == "spot" and (not base_asset or not quote_asset):
+        inferred_base_asset, inferred_quote_asset = infer_spot_asset_pair(symbol)
+        base_asset = base_asset or inferred_base_asset
+        quote_asset = quote_asset or inferred_quote_asset
     move_bps = rng.gauss(scenario.drift_bps, scenario.volatility_bps)
     if rng.random() < scenario.jump_probability:
         jump_direction = 1 if rng.random() >= 0.5 else -1
@@ -93,6 +105,10 @@ def generate_next_tick(
         price=round(next_price, 6),
         quantity=round(quantity, 6),
         side=side,
+        venue=venue,
+        instrument_type=instrument_type,
+        base_asset=base_asset,
+        quote_asset=quote_asset,
     )
 
 
@@ -111,8 +127,12 @@ def main() -> None:
                 current_price=current_price,
                 rng=rng,
                 scenario=scenario,
+                venue=args.venue,
+                instrument_type=args.instrument_type,
+                base_asset=args.base_asset,
+                quote_asset=args.quote_asset,
             )
-            producer.send(args.topic, key=tick.symbol, value=tick.to_payload()).get(timeout=10)
+            producer.send(args.topic, key=tick.instrument_key, value=tick.to_payload()).get(timeout=10)
             current_price = tick.price
             sent_count += 1
             print(

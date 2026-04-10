@@ -161,6 +161,6 @@ Kafka/Redpanda 原生支持 retention，不需要额外写应用层清理器。
 
 - 当前策略阈值较高，样例数据默认多为 `flat`
 - 最后一个窗口是否输出取决于事件时间与 watermark 推进
-- Flink 特征目前只使用简单聚合，不包含盘口或波动率细节
+- Flink 特征当前已经包含窗口级 VWAP、价格波动率和买卖量不平衡，但还没有跨窗口 rolling state 或跨标的特征
 - 当前推荐开发流是 fixture-first：优先用本地样本和 synthetic 数据复现问题，再按需接真实实时源
 - `make simulate` 适合做长时间、稳定、可控的链路演示；相比一次性 replay，更适合观察 Grafana 和 consumer 常驻行为

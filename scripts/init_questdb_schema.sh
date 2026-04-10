@@ -29,22 +29,36 @@ run_query "DROP TABLE IF EXISTS portfolio_snapshots"
 run_query "CREATE TABLE market_features (
   timestamp TIMESTAMP,
   symbol SYMBOL,
+  venue SYMBOL,
+  instrument_type SYMBOL,
+  base_asset SYMBOL,
+  quote_asset SYMBOL,
   window_start VARCHAR,
   window_end VARCHAR,
   trade_count LONG,
   avg_price DOUBLE,
+  vwap DOUBLE,
   open_price DOUBLE,
   close_price DOUBLE,
   total_quantity DOUBLE,
+  buy_quantity DOUBLE,
+  sell_quantity DOUBLE,
+  volume_imbalance DOUBLE,
+  price_volatility DOUBLE,
   price_return DOUBLE
 ) TIMESTAMP(timestamp) PARTITION BY HOUR TTL ${QUESTDB_TTL} WAL"
 
 run_query "CREATE TABLE trade_signals (
   timestamp TIMESTAMP,
   symbol SYMBOL,
+  venue SYMBOL,
+  instrument_type SYMBOL,
+  base_asset SYMBOL,
+  quote_asset SYMBOL,
   generated_at VARCHAR,
   window_end VARCHAR,
   target_position LONG,
+  target_position_size DOUBLE,
   reference_price DOUBLE,
   price_return DOUBLE,
   reason VARCHAR
@@ -53,11 +67,17 @@ run_query "CREATE TABLE trade_signals (
 run_query "CREATE TABLE portfolio_snapshots (
   timestamp TIMESTAMP,
   symbol SYMBOL,
+  venue SYMBOL,
+  instrument_type SYMBOL,
+  base_asset SYMBOL,
+  quote_asset SYMBOL,
   event_timestamp VARCHAR,
   action VARCHAR,
   fill_price DOUBLE,
   target_position LONG,
   current_position LONG,
+  target_position_size DOUBLE,
+  current_position_size DOUBLE,
   cash DOUBLE,
   equity DOUBLE
 ) TIMESTAMP(timestamp) PARTITION BY HOUR TTL ${QUESTDB_TTL} WAL"

@@ -29,24 +29,50 @@ def escape_string_field(value: str) -> str:
     return value.replace("\\", "\\\\").replace('"', '\\"')
 
 
-def to_ilp_line(measurement: str, symbol: str, fields: dict[str, str]) -> str:
+def to_ilp_line(measurement: str, tags: dict[str, str], fields: dict[str, str]) -> str:
+    tags_clause = ",".join(
+        f"{key}={escape_tag(value)}"
+        for key, value in tags.items()
+        if value
+    )
     fields_clause = ",".join(f"{key}={value}" for key, value in fields.items())
     ingestion_timestamp_ns = time.time_ns()
-    return f"{measurement},symbol={escape_tag(symbol)} {fields_clause} {ingestion_timestamp_ns}\n"
+    return f"{measurement},{tags_clause} {fields_clause} {ingestion_timestamp_ns}\n"
+
+
+def build_instrument_tags(symbol: str, venue: str, instrument_type: str, base_asset: str, quote_asset: str) -> dict[str, str]:
+    return {
+        "symbol": symbol,
+        "venue": venue,
+        "instrument_type": instrument_type,
+        "base_asset": base_asset,
+        "quote_asset": quote_asset,
+    }
 
 
 def build_feature_line(feature: MarketFeature) -> str:
     return to_ilp_line(
         "market_features",
-        feature.symbol,
+        build_instrument_tags(
+            feature.symbol,
+            feature.venue,
+            feature.instrument_type,
+            feature.base_asset,
+            feature.quote_asset,
+        ),
         {
             "window_start": f'"{escape_string_field(feature.to_payload()["window_start"])}"',
             "window_end": f'"{escape_string_field(feature.to_payload()["window_end"])}"',
             "trade_count": f"{feature.trade_count}i",
             "avg_price": str(feature.avg_price),
+            "vwap": str(feature.vwap),
             "open_price": str(feature.open_price),
             "close_price": str(feature.close_price),
             "total_quantity": str(feature.total_quantity),
+            "buy_quantity": str(feature.buy_quantity),
+            "sell_quantity": str(feature.sell_quantity),
+            "volume_imbalance": str(feature.volume_imbalance),
+            "price_volatility": str(feature.price_volatility),
             "price_return": str(feature.price_return),
         },
     )
@@ -56,11 +82,18 @@ def build_signal_line(signal: TradingSignal) -> str:
     payload = signal.to_payload()
     return to_ilp_line(
         "trade_signals",
-        signal.symbol,
+        build_instrument_tags(
+            signal.symbol,
+            signal.venue,
+            signal.instrument_type,
+            signal.base_asset,
+            signal.quote_asset,
+        ),
         {
             "generated_at": f'"{escape_string_field(payload["generated_at"])}"',
             "window_end": f'"{escape_string_field(payload["window_end"])}"',
             "target_position": f"{signal.target_position}i",
+            "target_position_size": str(signal.target_position_size),
             "reference_price": str(signal.reference_price),
             "price_return": str(signal.price_return),
             "reason": f'"{escape_string_field(signal.reason)}"',
@@ -72,13 +105,21 @@ def build_portfolio_line(snapshot: PortfolioSnapshot) -> str:
     payload = snapshot.to_payload()
     return to_ilp_line(
         "portfolio_snapshots",
-        snapshot.symbol,
+        build_instrument_tags(
+            snapshot.symbol,
+            snapshot.venue,
+            snapshot.instrument_type,
+            snapshot.base_asset,
+            snapshot.quote_asset,
+        ),
         {
             "event_timestamp": f'"{escape_string_field(payload["timestamp"])}"',
             "action": f'"{escape_string_field(snapshot.action)}"',
             "fill_price": str(snapshot.fill_price),
             "target_position": f"{snapshot.target_position}i",
             "current_position": f"{snapshot.current_position}i",
+            "target_position_size": str(snapshot.target_position_size),
+            "current_position_size": str(snapshot.current_position_size),
             "cash": str(snapshot.cash),
             "equity": str(snapshot.equity),
         },

@@ -28,6 +28,10 @@ def test_tick_from_swap_log_maps_buy_of_base_token() -> None:
     tick = tick_from_swap_log(build_swap_log(data_hex), pair, block_time)
 
     assert tick.symbol == "ETHUSDC"
+    assert tick.venue == "evm"
+    assert tick.instrument_type == "spot"
+    assert tick.base_asset == "ETH"
+    assert tick.quote_asset == "USDC"
     assert tick.side == "buy"
     assert tick.quantity == 1.0
     assert tick.price == 3200.0
@@ -52,6 +56,9 @@ def test_tick_from_swap_log_maps_sell_of_base_token() -> None:
     tick = tick_from_swap_log(build_swap_log(data_hex), pair, block_time)
 
     assert tick.symbol == "ETHUSDC"
+    assert tick.venue == "evm"
+    assert tick.base_asset == "ETH"
+    assert tick.quote_asset == "USDC"
     assert tick.side == "sell"
     assert tick.quantity == 2.0
     assert tick.price == 3200.0

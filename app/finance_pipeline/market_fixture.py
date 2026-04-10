@@ -7,7 +7,17 @@ from typing import Iterable
 from finance_pipeline.schemas import MarketTick
 
 
-CSV_FIELDNAMES = ["symbol", "event_time", "price", "quantity", "side"]
+CSV_FIELDNAMES = [
+    "symbol",
+    "event_time",
+    "price",
+    "quantity",
+    "side",
+    "venue",
+    "instrument_type",
+    "base_asset",
+    "quote_asset",
+]
 
 
 def load_ticks(csv_path: Path) -> list[MarketTick]:
@@ -29,5 +39,9 @@ def write_ticks(csv_path: Path, ticks: Iterable[MarketTick]) -> None:
                     "price": payload["price"],
                     "quantity": payload["quantity"],
                     "side": payload["side"],
+                    "venue": payload["venue"],
+                    "instrument_type": payload["instrument_type"],
+                    "base_asset": payload["base_asset"],
+                    "quote_asset": payload["quote_asset"],
                 }
             )

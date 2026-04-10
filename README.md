@@ -10,6 +10,16 @@
 4. Python 组合服务消费信号，记录仓位、现金和权益快照
 5. QuestDB 持久化结果流，Grafana 实时展示大盘，Redpanda Console 用于 topic 观测
 
+当前 schema 已经从“只有 `symbol`”扩展到 instrument metadata 维度。`market_ticks` / `market_features` / `trade_signals` / `portfolio_snapshots` 现在统一支持：
+
+- `symbol`
+- `venue`
+- `instrument_type`
+- `base_asset`
+- `quote_asset`
+
+这样后续接多 venue、多标的，或继续往 perps / options 演进时，不需要先重做整条消息格式。
+
 ## 技术栈
 
 - Infra: Docker Compose, Redpanda, Apache Flink
@@ -172,13 +182,13 @@ make reset
 - 如果你想持续给整条 pipeline 喂可控数据，直接用 `make simulate`，场景参数在 YAML 的 `sources.synthetic_stream.scenarios` 下维护
 - `make onchain` 与 `make capture-onchain` 当前按 Uniswap V2 风格 `Swap` 事件把链上成交映射为 `market_ticks`
 - `sources.onchain.pair_address` 必须填写 pair 合约地址，不是 token 地址；当前实现默认把 token0 视为 `base`、token1 视为 `quote`
+- `market_features` 当前除了 `avg_price` / `price_return`，还会产出 `vwap`、`buy_quantity`、`sell_quantity`、`volume_imbalance`、`price_volatility`
 - 常用入口都收在 `Makefile`
 
 ## 文档
 
 - 设计说明见 `docs/architecture.md`
-- 开发计划与并行策略见 `docs/development-plan.md`
-- 并行开发状态板见 `docs/parallel-status.md`
+- 开发计划见 `docs/development-plan.md`
 - 运行说明见 `docs/runbook.md`
 - 数据源说明见 `docs/data-sources.md`
 - Binance 接入手册见 `docs/binance-manual.md`

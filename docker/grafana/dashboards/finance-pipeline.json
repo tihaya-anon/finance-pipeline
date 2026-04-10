@@ -17,11 +17,11 @@
           "datasource": { "type": "postgres", "uid": "questdb" },
           "editorType": "sql",
           "format": "time_series",
-          "rawSql": "SELECT timestamp AS time, avg_price, symbol FROM market_features WHERE $__timeFilter(timestamp) ORDER BY time",
+          "rawSql": "SELECT timestamp AS time, vwap AS value, symbol || ' @ ' || venue AS metric FROM market_features WHERE $__timeFilter(timestamp) ORDER BY time",
           "refId": "A"
         }
       ],
-      "title": "Average Price",
+      "title": "VWAP",
       "type": "timeseries"
     },
     {
@@ -35,7 +35,7 @@
           "datasource": { "type": "postgres", "uid": "questdb" },
           "editorType": "sql",
           "format": "time_series",
-          "rawSql": "SELECT timestamp AS time, price_return, symbol FROM market_features WHERE $__timeFilter(timestamp) ORDER BY time",
+          "rawSql": "SELECT timestamp AS time, price_return AS value, symbol || ' @ ' || venue AS metric FROM market_features WHERE $__timeFilter(timestamp) ORDER BY time",
           "refId": "A"
         }
       ],
@@ -53,11 +53,11 @@
           "datasource": { "type": "postgres", "uid": "questdb" },
           "editorType": "sql",
           "format": "time_series",
-          "rawSql": "SELECT timestamp AS time, total_quantity, symbol FROM market_features WHERE $__timeFilter(timestamp) ORDER BY time",
+          "rawSql": "SELECT timestamp AS time, volume_imbalance AS value, symbol || ' @ ' || venue AS metric FROM market_features WHERE $__timeFilter(timestamp) ORDER BY time",
           "refId": "A"
         }
       ],
-      "title": "Total Quantity",
+      "title": "Volume Imbalance",
       "type": "timeseries"
     },
     {
@@ -71,7 +71,7 @@
           "datasource": { "type": "postgres", "uid": "questdb" },
           "editorType": "sql",
           "format": "time_series",
-          "rawSql": "SELECT timestamp AS time, equity, symbol FROM portfolio_snapshots WHERE $__timeFilter(timestamp) ORDER BY time",
+          "rawSql": "SELECT timestamp AS time, equity AS value, symbol || ' @ ' || venue AS metric FROM portfolio_snapshots WHERE $__timeFilter(timestamp) ORDER BY time",
           "refId": "A"
         }
       ],
@@ -80,8 +80,26 @@
     },
     {
       "datasource": { "type": "postgres", "uid": "questdb" },
+      "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "id": 6,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "datasource": { "type": "postgres", "uid": "questdb" },
+          "editorType": "sql",
+          "format": "time_series",
+          "rawSql": "SELECT timestamp AS time, price_volatility AS value, symbol || ' @ ' || venue AS metric FROM market_features WHERE $__timeFilter(timestamp) ORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "title": "Price Volatility",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "postgres", "uid": "questdb" },
       "fieldConfig": { "defaults": {}, "overrides": [] },
-      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 16 },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
       "id": 5,
       "options": { "showHeader": true },
       "targets": [
@@ -89,7 +107,7 @@
           "datasource": { "type": "postgres", "uid": "questdb" },
           "editorType": "sql",
           "format": "table",
-          "rawSql": "SELECT timestamp, symbol, target_position, price_return, reason, window_end FROM trade_signals WHERE $__timeFilter(timestamp) ORDER BY timestamp DESC LIMIT 20",
+          "rawSql": "SELECT timestamp, venue, symbol, target_position, price_return, reason, window_end FROM trade_signals WHERE $__timeFilter(timestamp) ORDER BY timestamp DESC LIMIT 20",
           "refId": "A"
         }
       ],

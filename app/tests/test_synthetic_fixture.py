@@ -11,6 +11,10 @@ def test_synthetic_fixture_builds_deterministic_tick_series() -> None:
 
     assert len(ticks) == 3
     assert ticks[0].symbol == "BTCUSDT"
+    assert ticks[0].venue == "synthetic"
+    assert ticks[0].instrument_type == "spot"
+    assert ticks[0].base_asset == "BTC"
+    assert ticks[0].quote_asset == "USDT"
     assert ticks[0].event_time < ticks[1].event_time
     assert ticks[0].price > 0
     assert ticks[0].side in {"buy", "sell"}

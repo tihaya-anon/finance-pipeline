@@ -17,6 +17,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--target-topic", default=SETTINGS.signals_topic)
     parser.add_argument("--group-id", default="strategy-service")
     parser.add_argument("--threshold", type=float, default=0.001)
+    parser.add_argument("--max-position-size", type=float, default=1.0)
+    parser.add_argument("--max-return-for-full-size", type=float, default=0.005)
     parser.add_argument("--max-messages", type=int, default=6)
     parser.add_argument("--output", default=str(SETTINGS.artifacts_dir / "signals.jsonl"))
     return parser.parse_args()
@@ -47,14 +49,19 @@ def main() -> None:
                     for record in topic_partition_records:
                         # Persist every derived signal so the replay has a durable audit trail.
                         feature = MarketFeature.from_payload(record.value)
-                        signal = generate_signal(feature, threshold=args.threshold)
-                        producer.send(args.target_topic, key=signal.symbol, value=signal.to_payload()).get(timeout=10)
+                        signal = generate_signal(
+                            feature,
+                            threshold=args.threshold,
+                            max_position_size=args.max_position_size,
+                            max_return_for_full_size=args.max_return_for_full_size,
+                        )
+                        producer.send(args.target_topic, key=signal.instrument_key, value=signal.to_payload()).get(timeout=10)
                         handle.write(json.dumps(signal.to_payload(), separators=(",", ":")) + "\n")
                         handle.flush()
                         processed += 1
                         print(
                             f"signal {processed}: {signal.symbol} target={signal.target_position} "
-                            f"return={signal.price_return:.5f}"
+                            f"size={signal.target_position_size:.4f} return={signal.price_return:.5f}"
                         )
                         if args.max_messages > 0 and processed >= args.max_messages:
                             break
