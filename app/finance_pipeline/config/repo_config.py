@@ -12,7 +12,7 @@ import yaml
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
 APP_ROOT = PACKAGE_ROOT.parent
-REPO_ROOT = APP_ROOT.parent
+REPO_ROOT = APP_ROOT.parent.parent
 DEFAULT_CONFIG_PATH = REPO_ROOT / "config" / "development.yaml"
 SECRETS_FILE_SUFFIX = ".secrets.yaml"
 SENSITIVE_ENV_KEYS = {

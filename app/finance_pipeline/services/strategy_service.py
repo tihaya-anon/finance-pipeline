@@ -4,10 +4,10 @@ import argparse
 import json
 from pathlib import Path
 
-from finance_pipeline.kafka_utils import build_consumer, build_producer
-from finance_pipeline.schemas import MarketFeature
-from finance_pipeline.settings import SETTINGS
-from finance_pipeline.strategy import generate_signal
+from finance_pipeline.core.kafka_utils import build_consumer, build_producer
+from finance_pipeline.core.schemas import MarketFeature
+from finance_pipeline.config.settings import SETTINGS
+from finance_pipeline.services.strategy import generate_signal
 
 
 def parse_args() -> argparse.Namespace:

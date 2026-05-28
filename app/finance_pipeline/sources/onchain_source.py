@@ -12,9 +12,9 @@ from urllib import request
 
 from websockets.asyncio.client import connect
 
-from finance_pipeline.kafka_utils import build_producer
-from finance_pipeline.schemas import MarketTick
-from finance_pipeline.settings import SETTINGS
+from finance_pipeline.core.kafka_utils import build_producer
+from finance_pipeline.core.schemas import MarketTick
+from finance_pipeline.config.settings import SETTINGS
 
 
 UNISWAP_V2_SWAP_TOPIC = "0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822"

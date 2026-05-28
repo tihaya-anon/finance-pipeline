@@ -5,10 +5,10 @@ from datetime import datetime, timezone
 import time
 from pathlib import Path
 
-from finance_pipeline.kafka_utils import build_producer
-from finance_pipeline.market_fixture import load_ticks
-from finance_pipeline.schemas import MarketTick
-from finance_pipeline.settings import SETTINGS
+from finance_pipeline.core.kafka_utils import build_producer
+from finance_pipeline.storage.market_fixture import load_ticks
+from finance_pipeline.core.schemas import MarketTick
+from finance_pipeline.config.settings import SETTINGS
 
 
 def parse_args() -> argparse.Namespace:

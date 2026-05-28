@@ -1,4 +1,4 @@
-from finance_pipeline.schemas import MarketFeature
+from finance_pipeline.core.schemas import MarketFeature
 
 
 def test_market_feature_from_payload_remains_backward_compatible() -> None:

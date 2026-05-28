@@ -1,4 +1,4 @@
-from finance_pipeline.schemas import MarketTick
+from finance_pipeline.core.schemas import MarketTick
 
 
 def test_market_tick_can_be_built_from_binance_agg_trade() -> None:

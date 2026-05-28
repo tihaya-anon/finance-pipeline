@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from finance_pipeline.schemas import PortfolioSnapshot, TradingSignal
+from finance_pipeline.core.schemas import PortfolioSnapshot, TradingSignal
 
 
 @dataclass

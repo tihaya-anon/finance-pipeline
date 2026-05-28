@@ -4,7 +4,7 @@ import csv
 from pathlib import Path
 from typing import Iterable
 
-from finance_pipeline.schemas import MarketTick
+from finance_pipeline.core.schemas import MarketTick
 
 
 CSV_FIELDNAMES = [

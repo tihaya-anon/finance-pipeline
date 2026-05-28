@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from pathlib import Path
 import os
 
-from finance_pipeline.repo_config import get_config_value, load_repo_config, resolve_repo_path
+from finance_pipeline.config.repo_config import get_config_value, load_repo_config, resolve_repo_path
 
 PACKAGE_ROOT = Path(__file__).resolve().parent
 APP_ROOT = PACKAGE_ROOT.parent
-REPO_ROOT = APP_ROOT.parent
+REPO_ROOT = APP_ROOT.parent.parent
 CONFIG = load_repo_config()
 
 

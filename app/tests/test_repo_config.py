@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from finance_pipeline.repo_config import build_config_env, load_repo_config, redact_sensitive_env
+from finance_pipeline.config.repo_config import build_config_env, load_repo_config, redact_sensitive_env
 
 
 def test_repo_config_loads_yaml_defaults() -> None:

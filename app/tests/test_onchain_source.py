@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from finance_pipeline.onchain_source import PairConfig, sort_evm_logs, tick_from_swap_log
+from finance_pipeline.sources.onchain_source import PairConfig, sort_evm_logs, tick_from_swap_log
 
 
 def build_swap_log(data_hex: str) -> dict[str, str]:

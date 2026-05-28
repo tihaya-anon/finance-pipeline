@@ -8,9 +8,9 @@ from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
 
-from finance_pipeline.market_fixture import load_ticks
-from finance_pipeline.schemas import MarketTick, format_utc_timestamp
-from finance_pipeline.settings import SETTINGS
+from finance_pipeline.storage.market_fixture import load_ticks
+from finance_pipeline.core.schemas import MarketTick, format_utc_timestamp
+from finance_pipeline.config.settings import SETTINGS
 
 
 DEFAULT_WINDOW_SECONDS = 5

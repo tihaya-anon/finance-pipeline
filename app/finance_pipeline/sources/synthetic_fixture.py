@@ -5,9 +5,9 @@ from datetime import timedelta
 from pathlib import Path
 import random
 
-from finance_pipeline.market_fixture import write_ticks
-from finance_pipeline.schemas import MarketTick, infer_spot_asset_pair, parse_utc_timestamp
-from finance_pipeline.settings import SETTINGS
+from finance_pipeline.storage.market_fixture import write_ticks
+from finance_pipeline.core.schemas import MarketTick, infer_spot_asset_pair, parse_utc_timestamp
+from finance_pipeline.config.settings import SETTINGS
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

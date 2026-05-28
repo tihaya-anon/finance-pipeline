@@ -6,10 +6,10 @@ from datetime import datetime, timezone
 import random
 import time
 
-from finance_pipeline.kafka_utils import build_producer
-from finance_pipeline.repo_config import get_config_value, load_repo_config
-from finance_pipeline.schemas import MarketTick, infer_spot_asset_pair
-from finance_pipeline.settings import SETTINGS
+from finance_pipeline.core.kafka_utils import build_producer
+from finance_pipeline.config.repo_config import get_config_value, load_repo_config
+from finance_pipeline.core.schemas import MarketTick, infer_spot_asset_pair
+from finance_pipeline.config.settings import SETTINGS
 
 
 CONFIG = load_repo_config()

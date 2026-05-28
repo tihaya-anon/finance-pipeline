@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
-from finance_pipeline.portfolio import SimplePortfolio
-from finance_pipeline.schemas import MarketFeature
-from finance_pipeline.strategy import generate_signal
+from finance_pipeline.services.portfolio import SimplePortfolio
+from finance_pipeline.core.schemas import MarketFeature
+from finance_pipeline.services.strategy import generate_signal
 
 
 def build_feature(price_return: float, close_price: float = 100.0) -> MarketFeature:

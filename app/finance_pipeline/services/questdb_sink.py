@@ -4,9 +4,9 @@ import argparse
 import socket
 import time
 
-from finance_pipeline.kafka_utils import build_consumer
-from finance_pipeline.schemas import MarketFeature, PortfolioSnapshot, TradingSignal
-from finance_pipeline.settings import SETTINGS
+from finance_pipeline.core.kafka_utils import build_consumer
+from finance_pipeline.core.schemas import MarketFeature, PortfolioSnapshot, TradingSignal
+from finance_pipeline.config.settings import SETTINGS
 
 
 def parse_args() -> argparse.Namespace:

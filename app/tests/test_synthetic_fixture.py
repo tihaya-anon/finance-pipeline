@@ -1,4 +1,4 @@
-from finance_pipeline.synthetic_fixture import build_synthetic_ticks, parse_args
+from finance_pipeline.sources.synthetic_fixture import build_synthetic_ticks, parse_args
 
 
 def test_synthetic_fixture_builds_deterministic_tick_series() -> None:

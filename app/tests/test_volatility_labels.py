@@ -4,8 +4,8 @@ import csv
 import math
 from datetime import datetime, timedelta, timezone
 
-from finance_pipeline.schemas import MarketTick
-from finance_pipeline.volatility_labels import generate_future_volatility_labels, write_volatility_labels
+from finance_pipeline.core.schemas import MarketTick
+from finance_pipeline.research.volatility_labels import generate_future_volatility_labels, write_volatility_labels
 
 
 def build_tick(second_offset: int, price: float) -> MarketTick:

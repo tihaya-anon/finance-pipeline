@@ -7,8 +7,8 @@ from pathlib import Path
 
 from websockets.asyncio.client import connect
 
-from finance_pipeline.market_fixture import write_ticks
-from finance_pipeline.onchain_source import (
+from finance_pipeline.storage.market_fixture import write_ticks
+from finance_pipeline.sources.onchain_source import (
     BlockTimestampResolver,
     UNISWAP_V2_SWAP_TOPIC,
     normalize_hex_address,
@@ -16,7 +16,7 @@ from finance_pipeline.onchain_source import (
     tick_from_swap_log,
     validate_args,
 )
-from finance_pipeline.settings import SETTINGS
+from finance_pipeline.config.settings import SETTINGS
 
 
 def parse_args() -> argparse.Namespace:

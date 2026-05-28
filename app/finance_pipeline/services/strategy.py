@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from finance_pipeline.schemas import MarketFeature, TradingSignal
+from finance_pipeline.core.schemas import MarketFeature, TradingSignal
 
 
 LONG_SIGNAL = 1

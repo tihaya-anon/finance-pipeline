@@ -1,4 +1,4 @@
-from finance_pipeline.simulated_source import available_scenarios, generate_next_tick, resolve_scenario
+from finance_pipeline.sources.simulated_source import available_scenarios, generate_next_tick, resolve_scenario
 
 import random
 
