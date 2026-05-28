@@ -14,3 +14,4 @@ data/fixtures/generated/*
 data/fixtures/onchain/*
 !data/fixtures/onchain/.gitkeep
 config/*.secrets.yaml
+.codex
