@@ -1,4 +1,4 @@
-from finance_pipeline.services.questdb_sink import build_feature_line
+from scripts.python.questdb_sink import build_feature_line
 from finance_pipeline.core.schemas import MarketFeature
 from datetime import datetime, timezone
 

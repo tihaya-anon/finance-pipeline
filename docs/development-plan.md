@@ -62,9 +62,9 @@
 建议重点文件：
 
 - `app/finance_pipeline/strategy.py`
-- `app/finance_pipeline/strategy_service.py`
+- `scripts/python/strategy_service.py`
 - `app/finance_pipeline/portfolio.py`
-- `app/finance_pipeline/portfolio_service.py`
+- `scripts/python/portfolio_service.py`
 
 ### Milestone 3: Source / Simulation / Observability
 
