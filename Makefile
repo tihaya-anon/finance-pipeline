@@ -5,7 +5,7 @@ export FINANCE_PIPELINE_CONFIG := $(CONFIG_FILE)
 
 CONFIG_ENV = . ./scripts/lib/config_env.sh && load_config_env
 
-.PHONY: help install test mvp dev docker stop reset clean-data retention replay replay-fast binance onchain capture-onchain generate-synthetic replay-synthetic simulate compose-config net config-show
+.PHONY: help install test mvp dev docker stop reset clean-data retention replay replay-fast binance onchain capture-onchain generate-synthetic replay-synthetic simulate vol-labels compose-config net config-show
 
 help:
 	@echo "Targets:"
@@ -24,6 +24,7 @@ help:
 	@echo "  make generate-synthetic - generate a local synthetic CSV fixture"
 	@echo "  make replay-synthetic   - generate then replay the synthetic fixture"
 	@echo "  make simulate      - continuously stream synthetic ticks using a YAML scenario"
+	@echo "  make vol-labels    - generate offline future realized volatility labels from a tick CSV"
 	@echo "  make binance       - stream live Binance aggTrade data"
 	@echo "  make onchain       - stream EVM AMM swap logs into Kafka"
 	@echo "  make capture-onchain - capture onchain swap logs into a local fixture"
@@ -78,6 +79,9 @@ replay-synthetic:
 
 simulate:
 	@$(CONFIG_ENV) && uv --directory app run stream-simulated
+
+vol-labels:
+	@$(CONFIG_ENV) && uv --directory app run generate-vol-labels
 
 binance:
 	@$(CONFIG_ENV) && uv --directory app run stream-binance

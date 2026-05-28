@@ -126,6 +126,12 @@ make replay-synthetic
 make simulate
 ```
 
+生成 future realized volatility 标签：
+
+```bash
+make vol-labels
+```
+
 默认场景来自 `config/development.yaml` 里的 `sources.synthetic_stream.default_scenario`。当前内置场景有：
 
 - `calm_range`
@@ -182,6 +188,7 @@ make reset
 - `make replay` 默认会把 fixture 时间平移到当前时间附近，便于 Grafana 在默认 `now-15m` 窗口里直接看到结果
 - 推荐开发 workflow 是 `generate-synthetic` / `replay` / `replay-synthetic` / `capture-onchain`，真实 `make onchain` 只在需要时启用
 - 如果你想持续给整条 pipeline 喂可控数据，直接用 `make simulate`，场景参数在 YAML 的 `sources.synthetic_stream.scenarios` 下维护
+- `make vol-labels` 会基于 replay CSV 离线生成 `artifacts/future_vol_labels.csv`，用于 future realized vol 因子评估
 - `make onchain` 与 `make capture-onchain` 当前按 Uniswap V2 风格 `Swap` 事件把链上成交映射为 `market_ticks`
 - `sources.onchain.pair_address` 必须填写 pair 合约地址，不是 token 地址；当前实现默认把 token0 视为 `base`、token1 视为 `quote`
 - `market_features` 当前除了 `avg_price` / `price_return`，还会产出 `vwap`、`buy_quantity`、`sell_quantity`、`volume_imbalance`、`price_volatility`

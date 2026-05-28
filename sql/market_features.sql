@@ -32,9 +32,13 @@ CREATE TABLE market_features (
   trade_count BIGINT,
   avg_price DOUBLE,
   vwap DOUBLE,
+  high_price DOUBLE,
+  low_price DOUBLE,
   open_price DOUBLE,
   close_price DOUBLE,
+  high_low_range DOUBLE,
   total_quantity DOUBLE,
+  notional_volume DOUBLE,
   buy_quantity DOUBLE,
   sell_quantity DOUBLE,
   volume_imbalance DOUBLE,
@@ -133,7 +137,10 @@ SELECT
   COUNT(*) AS trade_count,
   ROUND(AVG(price), 6) AS avg_price,
   ROUND(SUM(price * quantity) / NULLIF(SUM(quantity), 0), 6) AS vwap,
+  ROUND(MAX(price), 6) AS high_price,
+  ROUND(MIN(price), 6) AS low_price,
   ROUND(SUM(quantity), 6) AS total_quantity,
+  ROUND(SUM(price * quantity), 6) AS notional_volume,
   ROUND(SUM(CASE WHEN side = 'buy' THEN quantity ELSE 0.0 END), 6) AS buy_quantity,
   ROUND(SUM(CASE WHEN side = 'sell' THEN quantity ELSE 0.0 END), 6) AS sell_quantity,
   ROUND(
@@ -169,9 +176,18 @@ SELECT
   stats.trade_count,
   stats.avg_price,
   stats.vwap,
+  stats.high_price,
+  stats.low_price,
   open_ticks.open_price,
   close_ticks.close_price,
+  ROUND(
+    (
+      stats.high_price - stats.low_price
+    ) / NULLIF(open_ticks.open_price, 0),
+    6
+  ) AS high_low_range,
   stats.total_quantity,
+  stats.notional_volume,
   stats.buy_quantity,
   stats.sell_quantity,
   stats.volume_imbalance,

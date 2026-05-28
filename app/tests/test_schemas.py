@@ -18,6 +18,10 @@ def test_market_feature_from_payload_remains_backward_compatible() -> None:
 
     assert feature.symbol == "BTCUSDT"
     assert feature.vwap == 43110.0
+    assert feature.high_price == 43120.0
+    assert feature.low_price == 43120.0
+    assert feature.high_low_range == 0.0
+    assert feature.notional_volume == 40954.5
     assert feature.buy_quantity == 0.0
     assert feature.sell_quantity == 0.0
     assert feature.volume_imbalance == 0.0

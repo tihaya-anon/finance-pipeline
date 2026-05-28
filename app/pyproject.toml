@@ -30,6 +30,7 @@ generate-synthetic-fixture = "finance_pipeline.synthetic_fixture:main"
 stream-simulated = "finance_pipeline.simulated_source:main"
 config-export = "finance_pipeline.repo_config:main"
 questdb-sink = "finance_pipeline.questdb_sink:main"
+generate-vol-labels = "finance_pipeline.volatility_labels:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

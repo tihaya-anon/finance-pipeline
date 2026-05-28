@@ -131,6 +131,10 @@ class MarketFeature:
     instrument_type: str = "spot"
     base_asset: str = ""
     quote_asset: str = ""
+    high_price: float = 0.0
+    low_price: float = 0.0
+    high_low_range: float = 0.0
+    notional_volume: float = 0.0
 
     @property
     def instrument_key(self) -> str:
@@ -148,7 +152,16 @@ class MarketFeature:
             vwap=float(payload.get("vwap", payload["avg_price"])),
             open_price=float(payload["open_price"]),
             close_price=float(payload["close_price"]),
+            high_price=float(payload.get("high_price", payload["close_price"])),
+            low_price=float(payload.get("low_price", payload["close_price"])),
+            high_low_range=float(payload.get("high_low_range", 0.0)),
             total_quantity=float(payload["total_quantity"]),
+            notional_volume=float(
+                payload.get(
+                    "notional_volume",
+                    float(payload.get("vwap", payload["avg_price"])) * float(payload["total_quantity"]),
+                )
+            ),
             buy_quantity=float(payload.get("buy_quantity", 0.0)),
             sell_quantity=float(payload.get("sell_quantity", 0.0)),
             volume_imbalance=float(payload.get("volume_imbalance", 0.0)),

@@ -11,9 +11,13 @@ def test_build_feature_line_contains_expected_measurement_and_fields() -> None:
         trade_count=4,
         avg_price=43110.0,
         vwap=43112.5,
+        high_price=43125.0,
+        low_price=43095.0,
         open_price=43100.0,
         close_price=43120.0,
+        high_low_range=0.000696,
         total_quantity=0.95,
+        notional_volume=40956.875,
         buy_quantity=0.6,
         sell_quantity=0.35,
         volume_imbalance=0.263158,
@@ -33,4 +37,8 @@ def test_build_feature_line_contains_expected_measurement_and_fields() -> None:
     assert 'window_end="2026-01-01T00:00:05.000Z"' in line
     assert "trade_count=4i" in line
     assert "vwap=43112.5" in line
+    assert "high_price=43125.0" in line
+    assert "low_price=43095.0" in line
+    assert "high_low_range=0.000696" in line
+    assert "notional_volume=40956.875" in line
     assert "volume_imbalance=0.263158" in line

@@ -74,6 +74,12 @@ make replay-synthetic
 make simulate
 ```
 
+生成 future realized volatility 标签：
+
+```bash
+make vol-labels
+```
+
 场景默认取自 `config/development.yaml` 的 `sources.synthetic_stream.default_scenario`。
 
 抓取链上 fixture：
