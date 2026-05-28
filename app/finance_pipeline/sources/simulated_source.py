@@ -112,8 +112,7 @@ def generate_next_tick(
     )
 
 
-def main() -> None:
-    args = parse_args()
+def run(args: argparse.Namespace) -> None:
     scenario = resolve_scenario(args.scenario)
     rng = random.Random(args.seed)
     producer = build_producer(args.bootstrap_servers)
@@ -145,5 +144,5 @@ def main() -> None:
         producer.close()
 
 
-if __name__ == "__main__":
-    main()
+def main() -> None:
+    run(parse_args())

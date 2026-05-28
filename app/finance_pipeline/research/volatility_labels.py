@@ -148,8 +148,7 @@ def write_volatility_labels(output_path: Path, labels: list[VolatilityLabel]) ->
             writer.writerow(label.__dict__)
 
 
-def main() -> None:
-    args = parse_args()
+def run(args: argparse.Namespace) -> None:
     ticks = load_ticks(Path(args.csv))
     labels = generate_future_volatility_labels(
         ticks,
@@ -160,5 +159,5 @@ def main() -> None:
     print(f"wrote {len(labels)} volatility labels to {args.output}")
 
 
-if __name__ == "__main__":
-    main()
+def main() -> None:
+    run(parse_args())

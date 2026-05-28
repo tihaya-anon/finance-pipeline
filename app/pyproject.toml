@@ -19,19 +19,6 @@ dev = [
   "pytest>=8.3.5,<9.0.0",
 ]
 
-[project.scripts]
-replay-market = "finance_pipeline.sources.replay:main"
-strategy-service = "finance_pipeline.services.strategy_service:main"
-portfolio-service = "finance_pipeline.services.portfolio_service:main"
-stream-binance = "finance_pipeline.sources.binance_source:main"
-stream-onchain = "finance_pipeline.sources.onchain_source:main"
-capture-onchain = "finance_pipeline.sources.capture_onchain:main"
-generate-synthetic-fixture = "finance_pipeline.sources.synthetic_fixture:main"
-stream-simulated = "finance_pipeline.sources.simulated_source:main"
-config-export = "finance_pipeline.config.repo_config:main"
-questdb-sink = "finance_pipeline.services.questdb_sink:main"
-generate-vol-labels = "finance_pipeline.research.volatility_labels:main"
-
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["finance_pipeline*"]

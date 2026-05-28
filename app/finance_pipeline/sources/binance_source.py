@@ -33,10 +33,9 @@ async def stream_binance(args: argparse.Namespace) -> None:
         producer.close()
 
 
-def main() -> None:
-    args = parse_args()
+def run(args: argparse.Namespace) -> None:
     asyncio.run(stream_binance(args))
 
 
-if __name__ == "__main__":
-    main()
+def main() -> None:
+    run(parse_args())

@@ -130,8 +130,7 @@ def build_portfolio_line(snapshot: PortfolioSnapshot) -> str:
     )
 
 
-def main() -> None:
-    args = parse_args()
+def run(args: argparse.Namespace) -> None:
     consumer = build_consumer(
         [SETTINGS.features_topic, SETTINGS.signals_topic, SETTINGS.portfolio_topic],
         bootstrap_servers=args.bootstrap_servers,
@@ -186,5 +185,5 @@ def main() -> None:
         consumer.close()
 
 
-if __name__ == "__main__":
-    main()
+def main() -> None:
+    run(parse_args())

@@ -19,10 +19,10 @@ if [[ -f "$SERVICE_PID_FILE" ]]; then
   rm -f "$SERVICE_PID_FILE"
 fi
 
-pkill -f "uv --directory app run strategy-service" >/dev/null 2>&1 || true
-pkill -f "uv --directory app run portfolio-service" >/dev/null 2>&1 || true
-pkill -f "uv --directory app run questdb-sink" >/dev/null 2>&1 || true
-pkill -f "uv --directory app run stream-binance" >/dev/null 2>&1 || true
+pkill -f "scripts/python/strategy_service.py" >/dev/null 2>&1 || true
+pkill -f "scripts/python/portfolio_service.py" >/dev/null 2>&1 || true
+pkill -f "scripts/python/questdb_sink.py" >/dev/null 2>&1 || true
+pkill -f "scripts/python/stream_binance.py" >/dev/null 2>&1 || true
 
 docker compose down --remove-orphans >/dev/null 2>&1 || true
 

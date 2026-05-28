@@ -54,8 +54,7 @@ def shift_ticks_to_now(ticks: list[MarketTick]) -> list[MarketTick]:
     ]
 
 
-def main() -> None:
-    args = parse_args()
+def run(args: argparse.Namespace) -> None:
     ticks = load_ticks(Path(args.csv))
     if args.shift_to_now:
         ticks = shift_ticks_to_now(ticks)
@@ -82,5 +81,5 @@ def main() -> None:
         producer.close()
 
 
-if __name__ == "__main__":
-    main()
+def main() -> None:
+    run(parse_args())

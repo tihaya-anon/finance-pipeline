@@ -1,5 +1,6 @@
 SHELL := /bin/bash
 
+ROOT_DIR := $(CURDIR)
 CONFIG_FILE ?= config/development.yaml
 export FINANCE_PIPELINE_CONFIG := $(CONFIG_FILE)
 
@@ -37,7 +38,7 @@ help:
 	@echo "Most runtime defaults now come from $(CONFIG_FILE)."
 
 config-show:
-	@$(CONFIG_ENV) && uv --directory app run config-export --config "$$FINANCE_PIPELINE_CONFIG" --format json
+	@$(CONFIG_ENV) && uv --directory app run python "$(ROOT_DIR)/scripts/python/config_export.py" --config "$$FINANCE_PIPELINE_CONFIG" --format json
 
 install:
 	@$(CONFIG_ENV) && uv --directory app sync --group dev
@@ -66,31 +67,31 @@ retention:
 	@$(CONFIG_ENV) && ./scripts/infra/apply_topic_retention.sh "$${RETENTION_MS:-$$DEV_TOPIC_RETENTION_MS}"
 
 replay:
-	@$(CONFIG_ENV) && uv --directory app run replay-market --shift-to-now
+	@$(CONFIG_ENV) && uv --directory app run python "$(ROOT_DIR)/scripts/python/replay_market.py" --shift-to-now
 
 replay-fast:
-	@$(CONFIG_ENV) && uv --directory app run replay-market --shift-to-now --speedup "$$REPLAY_FAST_SPEEDUP"
+	@$(CONFIG_ENV) && uv --directory app run python "$(ROOT_DIR)/scripts/python/replay_market.py" --shift-to-now --speedup "$$REPLAY_FAST_SPEEDUP"
 
 generate-synthetic:
-	@$(CONFIG_ENV) && uv --directory app run generate-synthetic-fixture
+	@$(CONFIG_ENV) && uv --directory app run python "$(ROOT_DIR)/scripts/python/generate_synthetic_fixture.py"
 
 replay-synthetic:
-	@$(CONFIG_ENV) && uv --directory app run generate-synthetic-fixture && uv --directory app run replay-market --csv "$$SYNTHETIC_OUTPUT_CSV"
+	@$(CONFIG_ENV) && uv --directory app run python "$(ROOT_DIR)/scripts/python/generate_synthetic_fixture.py" && uv --directory app run python "$(ROOT_DIR)/scripts/python/replay_market.py" --csv "$$SYNTHETIC_OUTPUT_CSV"
 
 simulate:
-	@$(CONFIG_ENV) && uv --directory app run stream-simulated
+	@$(CONFIG_ENV) && uv --directory app run python "$(ROOT_DIR)/scripts/python/stream_simulated.py"
 
 vol-labels:
-	@$(CONFIG_ENV) && uv --directory app run generate-vol-labels
+	@$(CONFIG_ENV) && uv --directory app run python "$(ROOT_DIR)/scripts/python/generate_vol_labels.py"
 
 binance:
-	@$(CONFIG_ENV) && uv --directory app run stream-binance
+	@$(CONFIG_ENV) && uv --directory app run python "$(ROOT_DIR)/scripts/python/stream_binance.py"
 
 onchain:
-	@$(CONFIG_ENV) && uv --directory app run stream-onchain
+	@$(CONFIG_ENV) && uv --directory app run python "$(ROOT_DIR)/scripts/python/stream_onchain.py"
 
 capture-onchain:
-	@$(CONFIG_ENV) && uv --directory app run capture-onchain
+	@$(CONFIG_ENV) && uv --directory app run python "$(ROOT_DIR)/scripts/python/capture_onchain.py"
 
 compose-config:
 	@$(CONFIG_ENV) && docker compose config

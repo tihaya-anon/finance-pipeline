@@ -33,14 +33,14 @@ SQL_CLIENT_PID=$!
 
 sleep 8
 
-uv --directory app run strategy-service --max-messages 6 > artifacts/strategy.log 2>&1 &
+uv --directory app run python "$ROOT_DIR/scripts/python/strategy_service.py" --max-messages 6 > artifacts/strategy.log 2>&1 &
 STRATEGY_PID=$!
 
-uv --directory app run portfolio-service --max-messages 6 > artifacts/portfolio.log 2>&1 &
+uv --directory app run python "$ROOT_DIR/scripts/python/portfolio_service.py" --max-messages 6 > artifacts/portfolio.log 2>&1 &
 PORTFOLIO_PID=$!
 
 sleep 3
-uv --directory app run replay-market --csv "$ROOT_DIR/data/sample/btcusdt_ticks.csv" --speedup 50
+uv --directory app run python "$ROOT_DIR/scripts/python/replay_market.py" --csv "$ROOT_DIR/data/sample/btcusdt_ticks.csv" --speedup 50
 
 wait "$STRATEGY_PID"
 wait "$PORTFOLIO_PID"

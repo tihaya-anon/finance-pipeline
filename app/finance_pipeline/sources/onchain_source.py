@@ -269,10 +269,9 @@ async def stream_onchain_swaps(args: argparse.Namespace) -> None:
         producer.close()
 
 
-def main() -> None:
-    args = parse_args()
+def run(args: argparse.Namespace) -> None:
     asyncio.run(stream_onchain_swaps(args))
 
 
-if __name__ == "__main__":
-    main()
+def main() -> None:
+    run(parse_args())

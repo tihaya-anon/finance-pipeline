@@ -91,10 +91,9 @@ async def capture_ticks(args: argparse.Namespace) -> None:
     print(f"wrote {len(ticks)} captured ticks to {args.output}")
 
 
-def main() -> None:
-    args = parse_args()
+def run(args: argparse.Namespace) -> None:
     asyncio.run(capture_ticks(args))
 
 
-if __name__ == "__main__":
-    main()
+def main() -> None:
+    run(parse_args())

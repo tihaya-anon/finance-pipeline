@@ -65,12 +65,11 @@ def build_synthetic_ticks(args: argparse.Namespace) -> list[MarketTick]:
     return ticks
 
 
-def main() -> None:
-    args = parse_args()
+def run(args: argparse.Namespace) -> None:
     ticks = build_synthetic_ticks(args)
     write_ticks(Path(args.output), ticks)
     print(f"wrote {len(ticks)} synthetic ticks to {args.output}")
 
 
-if __name__ == "__main__":
-    main()
+def main() -> None:
+    run(parse_args())
