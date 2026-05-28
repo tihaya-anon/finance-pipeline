@@ -5,7 +5,6 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PORT_STATE_FILE="$ROOT_DIR/artifacts/ports.env"
 
 . "$ROOT_DIR/scripts/lib/config_env.sh"
-load_config_env
 
 PORT_VARIABLES=(
   HOST_KAFKA_PORT
@@ -132,6 +131,9 @@ resolve_port_variable() {
 resolve_runtime_ports() {
   mkdir -p "$ROOT_DIR/artifacts"
   ASSIGNED_PORTS=()
+
+  # Load non-port runtime config before resolving host port assignments.
+  load_config_env
 
   for name in "${PORT_VARIABLES[@]}"; do
     resolve_port_variable "$name"

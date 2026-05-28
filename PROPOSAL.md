@@ -1,260 +1,238 @@
-我帮你把我们这段对话**压缩成一套清晰的认知框架 + 决策结论**，尽量做到“结构清晰 + 一眼能用”。
+# Finance Pipeline Proposal
 
----
+## Objective
 
-# 🧠 一、我们到底在讨论什么（核心主线）
+本项目的目标不是做一个泛化的“量化什么都能装”的 demo，而是沿着一条明确主线推进：
 
-你最初的问题是：
+1. 先构建面向标的行情的流式研究骨架
+2. 重点研究未来实现波动率 `realized volatility` 的预测
+3. 再把标的波动率预测和期权隐含波动率 `implied volatility` 连接起来
+4. 最终形成可用于波动率交易、相对价值分析和期权定价辅助的研究平台
 
-> 量化金融里有没有大数据？
-> crypto 很像流处理（Flink），那传统金融呢？
+核心问题可以概括为：
 
-我们一路深入到了：
+> 能否利用标的行情、成交、微观结构与跨窗口特征，稳定预测未来波动率，并与期权市场当前定价出来的隐含波动率形成可交易偏差？
 
-👉 **量化金融 = 数据系统问题 + 计算问题 + 实时系统问题**
+## Why This Direction
 
-并逐步聚焦到你真正关心的：
+相比直接做传统股票 alpha，这条路线更适合当前仓库，也更容易自然扩展到期权。
 
-> **期权 + 大数据架构 + 流处理（Flink） + 实战项目怎么做**
+原因有三点：
 
----
+1. 当前系统已经具备流处理骨架，天然适合做高频和分钟级波动率特征
+2. 波动率研究同时连接标的市场和期权市场，主线比“纯股票因子”更统一
+3. 后续扩展到 IV surface、skew、term structure 时，不需要推翻已有架构
 
-# 📊 二、核心认知总结（最重要）
+需要明确的是：
 
-## 1️⃣ 量化金融确实有“大数据”，但形态不同
+- 标的因子不能“直接算出” IV
+- IV 是期权市场价格隐含出来的未来波动率定价结果
+- 标的因子更适合预测未来实现波动率 `future realized vol`
+- 真正可交易的是 `IV` 和模型预测波动率之间的偏差，而不是把两者混为一谈
 
-不是简单“数据量大”，而是：
+## Research Thesis
 
-* 高频 tick / order book（事件流爆炸）
-* 另类数据（非结构化 + 大规模）
-* 因子研究（组合爆炸 + 计算爆炸）
-* 实时风险与执行系统
+研究假设如下：
 
-👉 本质是：
-**大规模计算 + 流处理 + 时序数据系统**
+1. 标的的短中期未来实现波动率不是完全随机的
+2. 成交量、收益率路径、波动聚集、盘口失衡、跳跃代理变量等特征，对未来波动率有解释力
+3. 期权市场的 IV 提供了市场定价视角，但其中包含风险溢价、供需和尾部风险补偿
+4. 因此，`IV - expected future realized vol` 可以作为一个有研究价值的 spread
 
----
+这个 spread 后续可以支持：
 
-## 2️⃣ 大规模因子研究本质
+- 买入或卖出波动率
+- IV vs RV 相对价值策略
+- 不同期限之间的 term structure 策略
+- 不同 moneyness 之间的 skew 策略
 
-一句话总结：
+## System Scope
 
-> **在巨大函数空间中搜索 alpha（信号）**
+系统按两层资产对象推进。
 
-特点：
+### Layer 1: Underlying Volatility Engine
 
-* 10万~百万因子候选
-* 每个因子都要完整 backtest + IC 检验
-* 本质像 AutoML / 搜索问题
-* 计算规模远大于数据本身
+先围绕标的现货或永续合约建立研究能力：
 
-👉 更偏：
-**batch + 分布式计算（Spark/Ray）**
+- ticks / trades / bars ingestion
+- stream feature computation
+- future realized volatility label generation
+- factor evaluation and replay
 
----
+这一层先不依赖期权链，也能单独形成完整研究闭环。
 
-## 3️⃣ 期权是“更像大数据系统”的领域
+### Layer 2: Option Volatility Analytics
 
-比股票复杂很多：
+在标的波动率预测稳定之后，再接入期权市场：
 
-* 数据结构：1D → 2D/3D（IV surface）
-* 强非线性（Greeks）
-* 实时性更强
-* 噪声更大
+- option quote / trade ingestion
+- per-strike / per-expiry IV calculation
+- ATM IV extraction
+- skew / term structure / surface snapshots
+- IV vs forecast RV comparison
 
-核心对象：
+这一层的目标不是一开始就做完整做市或复杂 Greeks 风控，而是先把波动率定价和相对价值链路打通。
 
-* IV surface（σ(K, T)）
-* Greeks aggregation
-* skew / term structure
+## Data Strategy
 
-👉 本质：
+考虑到真实期权实时数据获取成本较高，数据策略按可获得性分层：
 
-> **在动态变化的高维波动率曲面上做建模 + 风控 + 套利**
+### Phase A: Replay-First
 
----
+优先使用本地样本和合成数据：
 
-## 4️⃣ Flink 在量化里的真实定位（关键结论）
+- 历史 tick replay
+- synthetic volatility regimes
+- 可复现的事件驱动测试
 
-不是交易引擎，而是：
+### Phase B: Live Underlying Streams
 
-> **实时计算层 / 风控层 / 特征层**
+接入开放程度更高的实时标的数据流：
 
-### 能做：
+- crypto spot / perp
+- 后续可替换为股票或 ETF 行情
 
-* Greeks aggregation
-* IV surface 更新（ms级）
-* 风控监控
-* 实时特征
+### Phase C: Option Data
 
-### 不能做：
+在底层稳定后引入期权数据：
 
-* 高频交易执行（μs级）
+- 历史 option chain
+- 延迟或 replay 的 option quote/trade
+- 条件允许时接实时期权行情
 
-👉 核心分层：
+## Core Metrics
 
-```
-C++（μs） → 交易
-Flink（ms） → 实时计算
-Spark（batch） → 研究
-```
+这个项目的核心不是先追逐收益率，而是先验证研究对象和系统能力。
 
----
+优先指标包括：
 
-## 5️⃣ 免费数据现实
+- future realized vol prediction error
+- correlation / rank IC of volatility factors
+- regime stability across replay windows
+- IV minus forecast RV spread behavior
+- signal persistence after fees and slippage assumptions
 
-### 你得接受：
+后续策略层再看：
 
-* 传统金融实时期权数据基本不免费
-* crypto 数据最开放（最适合练系统）
+- Sharpe
+- drawdown
+- turnover
+- vega exposure
+- tail risk under jump scenarios
 
-### 可用策略：
+## Architecture Principles
 
-* crypto → 实时流
-* 传统金融 → 历史数据 + replay
+### 1. Stream-First, But Not Stream-Only
 
-👉 重点：
-**“生产体验”靠 replay 和延迟模拟，而不是必须真实实时数据**
+Flink 负责实时特征和在线聚合，batch 侧负责离线研究和评估。项目不把所有问题硬塞进流计算。
 
----
+### 2. Unified Instrument Schema
 
-## 6️⃣ crypto vs 传统金融（你问的关键判断）
+底层 schema 必须从一开始支持：
 
-你的判断是对的：
+- venue
+- instrument_type
+- base_asset
+- quote_asset
+- symbol
 
-> **两者差距没有想象中大，主要差在市场结构**
+这样才能平滑扩展到现货、perp、股票、ETF、期权。
 
-### 共通：
+### 3. Replay Is a First-Class Capability
 
-* event stream
-* feature engineering
-* 回测 / 风控 / 执行
+replay 不是辅助脚本，而是验证研究和模拟生产行为的核心能力。
 
-### 差异：
+### 4. Separate Underlying and Option Layers
 
-* 交易时间（7x24 vs session）
-* 数据质量
-* 合约结构
-* 微观结构
+标的行情特征、未来波动率标签、期权 IV 计算、期权策略信号需要逻辑分层，避免过早耦合。
 
-👉 结论：
+## Proposed Roadmap
 
-> **系统可以高度复用，只需替换“市场适配层”**
+### Phase 1: Multi-Asset Underlying Schema
 
----
+打稳底层数据模型：
 
-# 🧭 三、最重要的决策结论（我帮你定的路线）
+- multi-asset schema
+- feature topic normalization
+- instrument-aware keys and storage
 
-## ✅ 最优路径（非常关键）
+### Phase 2: Volatility Feature Engine
 
-### Phase 1：先做 crypto（推荐）
+围绕未来波动率预测完善特征：
 
-目的：搭系统
+- rolling realized vol
+- return dispersion
+- jump proxies
+- buy/sell imbalance
+- volume and liquidity features
+- correlation-ready outputs
 
-* Kafka + Flink pipeline
-* 历史 replay
-* feature engine
-* 简单策略
+### Phase 3: Vol Forecasting and Evaluation
 
-👉 优点：
+引入更明确的研究闭环：
 
-* 数据容易拿
-* 反馈快
-* 流处理体验最好
+- define forward vol horizons
+- generate labels
+- evaluate factors
+- compare replay regimes
 
----
+### Phase 4: Strategy / Portfolio / Risk
 
-### Phase 2：做 crypto 衍生品（贴合你兴趣）
+在预测能力形成后，再做策略层：
 
-* perp / options
-* vol / term structure
-* risk / Greeks
+- volatility signal abstraction
+- position sizing
+- exposure controls
+- scenario-based risk hooks
 
-👉 让系统“期权化”
+### Phase 5: Option IV Integration
 
----
+接入期权链并形成波动率相对价值能力：
 
-### Phase 3：迁移到传统金融
+- IV calculation
+- ATM IV time series
+- term structure
+- skew features
+- IV vs forecast RV spread analytics
 
-补：
+### Phase 6: Volatility Trading Research
 
-* session calendar
-* corporate actions
-* point-in-time
-* execution model
+最终研究策略包括：
 
-👉 此时成本很低（因为架构已稳定）
+- long/short vol
+- calendar spread
+- skew spread
+- event-driven volatility dislocations
 
----
+## Near-Term Build Order
 
-# 🏗️ 四、系统设计核心原则（贯穿全局）
+当前最合理的近程顺序是：
 
-你需要从一开始就这样设计：
+1. 先把标的流式特征做扎实
+2. 明确定义 future realized vol 的预测 horizon
+3. 做一批基础波动率因子
+4. 先验证这些因子在 replay 和 synthetic regimes 下是否稳定
+5. 再接期权 IV，不要一开始就直接冲 surface 和 Greeks
 
-### 1️⃣ 分层解耦
+## Non-Goals For Now
 
-* source adapter（交易所/数据源）
-* event schema（统一）
-* feature engine
-* strategy
-* execution
+当前阶段不优先做：
 
----
+- 超高频撮合或 execution engine
+- 完整做市系统
+- 全量 Greeks 风控平台
+- 一上来就覆盖完整股票和期权生产数据接入
+- 没有标的预测能力前就直接做复杂期权组合策略
 
-### 2️⃣ 可迁移性设计
+## Summary
 
-必须独立：
+本项目的核心主线是：
 
-* instrument schema
-* session/calendar
-* fee/slippage model
+> 用标的因子预测未来波动率，再和期权市场隐含波动率连接起来，研究可交易的波动率偏差。
 
----
+这条路线兼顾了：
 
-### 3️⃣ Replay 是核心能力
-
-不是辅助，而是：
-
-> **模拟生产环境的关键工具**
-
----
-
-### 4️⃣ 批流分离
-
-* Batch → 因子研究
-* Stream → 实时计算
-
----
-
-# 🎯 五、你现在的位置（很关键的判断）
-
-你已经具备：
-
-* ✅ 大数据架构能力
-* ✅ 对衍生品（期权）兴趣强
-* ✅ 对实时系统有直觉（Flink）
-
-👉 这在市场上是一个**非常稀缺的交叉点**：
-
-> **量化系统工程（Quant Infra） + 衍生品（Volatility）**
-
----
-
-# 🔥 六、最终一句话总结（给你记住）
-
-> **量化金融的本质不是“金融”，而是：在高维时序数据上做实时计算与大规模搜索。**
-
-而你的最佳路径是：
-
-> **用 crypto 搭系统 → 用期权提升复杂度 → 再迁移到传统金融。**
-
----
-
-# 👉 如果你下一步要继续
-
-我可以直接给你：
-
-* 一个**完整项目结构（目录 + Kafka topics + Flink jobs + schema）**
-* 或一个**“期权实时系统 mini 设计（含 IV surface + Greeks pipeline）”**
-
-这一步就会从“理解”进入“能做出来”。
+- 当前仓库已有的流处理能力
+- 后续扩展到期权和波动率曲面的空间
+- replay-first 的现实开发方式
+- 从 underlying 到 derivative 的自然升级路径

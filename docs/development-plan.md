@@ -2,12 +2,13 @@
 
 ## Objective
 
-当前目标不是继续堆单点功能，而是把项目从单标的 MVP 推到可扩展的量化研究骨架：
+当前目标不是继续堆单点功能，而是把项目从单标的 MVP 推到可扩展的波动率研究骨架：
 
 1. 多标的 underlying 能力
-2. 更真实的 strategy / portfolio / risk 分层
-3. 后续可平滑扩展到 perps / options
-4. 本地 fixture / simulate-first 工作流
+2. 面向 future realized vol 的特征与标签
+3. 更真实的 strategy / portfolio / risk 分层
+4. 后续可平滑扩展到 options / IV analytics
+5. 本地 fixture / simulate-first 工作流
 
 当前开发方式改为串行推进，不再维护并行 worktree 或 `docs/parallel-status.md`。
 
@@ -16,12 +17,12 @@
 建议严格按下面顺序推进：
 
 1. Multi-asset schema and feature pipeline
-2. Strategy and portfolio sizing/risk
-3. Simulation and replay scenario library
-4. Perps extensions
-5. Options schema, Greeks, IV surface, skew/term structure
+2. Volatility feature engine and forward-vol labels
+3. Strategy and portfolio sizing/risk
+4. Simulation and replay scenario library
+5. Options schema, IV analytics, skew/term structure
 
-不要一开始就直接冲 options。先把多标的 underlying 骨架打稳，后面再往 options 升维。
+不要一开始就直接冲 options。先把多标的 underlying 骨架和波动率预测闭环打稳，后面再往 IV 和 options 升维。
 
 ## Current Stage
 
@@ -36,22 +37,24 @@
 
 ## Next Milestones
 
-### Milestone 1: Feature Engine
+### Milestone 1: Volatility Feature Engine
 
 优先改 `sql/market_features.sql`，把现在的基础窗口聚合升级为真正可交易的特征：
 
 - VWAP
 - rolling volatility
 - buy/sell volume imbalance
+- forward-vol label ready outputs
 - correlation-ready outputs
 
-当前这一批里，VWAP / price volatility / volume imbalance 与时间语义正确的 open/close 已经补上。下一步还缺的是更明确的 correlation-ready outputs，以及跨窗口 rolling state。
+当前这一批里，VWAP / price volatility / volume imbalance 与时间语义正确的 open/close 已经补上。下一步还缺的是更明确的 forward-vol label outputs、correlation-ready outputs，以及跨窗口 rolling state。
 
-### Milestone 2: Strategy / Portfolio / Risk
+### Milestone 2: Vol Forecasting / Strategy / Portfolio / Risk
 
 在特征层稳定之后，再改 Python 侧：
 
-- 从单阈值动量扩展到多策略接口
+- 先定义 future realized vol 的预测 horizon
+- 从单阈值动量扩展到 volatility-oriented signal interface
 - 增加 position sizing
 - 增加 gross / net exposure
 - 增加资金分配和风险钩子
@@ -71,6 +74,7 @@
 - 更细的 replay presets
 - 更明确的 dashboard 过滤维度
 - runbook 补充多 source / 多 venue 说明
+- 为后续 IV 接入预留 option chain replay 入口
 
 ## Serial Workflow
 
