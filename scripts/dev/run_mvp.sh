@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
-. "$ROOT_DIR/scripts/port_state.sh"
+. "$ROOT_DIR/scripts/lib/port_state.sh"
 
 mkdir -p artifacts
 : > artifacts/signals.jsonl
@@ -24,8 +24,8 @@ save_runtime_ports
 
 uv --directory app sync --group dev
 docker compose up -d --build redpanda jobmanager taskmanager
-./scripts/wait_for_infra.sh
-./scripts/create_topics.sh
+./scripts/infra/wait_for_infra.sh
+./scripts/infra/create_topics.sh
 
 docker compose exec -T jobmanager /bin/bash -lc "/opt/flink/bin/sql-client.sh -f /opt/flink/sql/market_features.sql" \
   > artifacts/flink-submit.log 2>&1 &

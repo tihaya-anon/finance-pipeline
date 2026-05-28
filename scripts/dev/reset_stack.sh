@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
-./scripts/stop_stack.sh
+./scripts/dev/stop_stack.sh
 
 docker compose down -v --remove-orphans >/dev/null 2>&1 || true
 
@@ -14,4 +14,4 @@ touch artifacts/.gitkeep
 
 echo "Finance pipeline stack reset."
 echo "Current preferred ports:"
-make ports
+make net

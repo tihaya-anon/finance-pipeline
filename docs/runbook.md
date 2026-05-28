@@ -21,7 +21,7 @@ uv --directory app run pytest
 ## Run MVP
 
 ```bash
-./scripts/run_mvp.sh
+./scripts/dev/run_mvp.sh
 ```
 
 ## Start Long-Running Dev Mode
@@ -146,7 +146,7 @@ Kafka/Redpanda 原生支持 retention，不需要额外写应用层清理器。
 开发环境里可直接调 topic 保留时间：
 
 ```bash
-./scripts/apply_topic_retention.sh 3600000
+./scripts/infra/apply_topic_retention.sh 3600000
 ```
 
 上面示例表示保留 1 小时。
@@ -154,7 +154,7 @@ Kafka/Redpanda 原生支持 retention，不需要额外写应用层清理器。
 如果要彻底清空开发数据：
 
 ```bash
-./scripts/reset_dev_data.sh
+./scripts/dev/reset_dev_data.sh
 ```
 
 ## Known Tradeoffs

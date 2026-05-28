@@ -19,7 +19,7 @@
 ## 一次性启动开发栈
 
 ```bash
-./scripts/start_dev_stack.sh
+./scripts/dev/start_dev_stack.sh
 ```
 
 启动后可打开：

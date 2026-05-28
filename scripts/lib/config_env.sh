@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-CONFIG_ENV_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CONFIG_ENV_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 load_config_env() {
   local config_file="${FINANCE_PIPELINE_CONFIG:-$CONFIG_ENV_ROOT/config/development.yaml}"

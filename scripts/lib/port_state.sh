@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PORT_STATE_FILE="$ROOT_DIR/artifacts/ports.env"
 
-. "$ROOT_DIR/scripts/config_env.sh"
+. "$ROOT_DIR/scripts/lib/config_env.sh"
 load_config_env
 
 PORT_VARIABLES=(

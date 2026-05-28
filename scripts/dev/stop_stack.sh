@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
-. "$ROOT_DIR/scripts/port_state.sh"
+. "$ROOT_DIR/scripts/lib/port_state.sh"
 
 SERVICE_PID_FILE="$ROOT_DIR/artifacts/service-pids.env"
 

@@ -38,7 +38,9 @@ data/fixtures/          本地 fixture 与合成数据
 docs/                   设计与运行文档
 docker/flink/           Flink 自定义镜像
 sql/                    Flink SQL 作业
-scripts/                启动与验证脚本
+scripts/dev/            开发栈入口脚本
+scripts/infra/          基础设施辅助脚本
+scripts/lib/            脚本共享库
 artifacts/              运行结果输出
 ```
 

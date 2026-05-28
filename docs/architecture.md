@@ -35,7 +35,9 @@
 - `config/`: YAML 配置，驱动 source 默认值、端口和保留策略
 - `sql/`: Flink SQL 作业
 - `docker/`: Flink 镜像定制
-- `scripts/`: 一键运行与基础设施辅助脚本
+- `scripts/dev/`: 开发栈入口脚本
+- `scripts/infra/`: 基础设施辅助脚本
+- `scripts/lib/`: 脚本共享库
 - `data/`: 样例输入数据、链上采样 fixture、synthetic fixture
 - `artifacts/`: 运行结果
 

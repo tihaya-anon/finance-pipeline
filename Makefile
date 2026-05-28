@@ -3,7 +3,7 @@ SHELL := /bin/bash
 CONFIG_FILE ?= config/development.yaml
 export FINANCE_PIPELINE_CONFIG := $(CONFIG_FILE)
 
-CONFIG_ENV = . ./scripts/config_env.sh && load_config_env
+CONFIG_ENV = . ./scripts/lib/config_env.sh && load_config_env
 
 .PHONY: help install test mvp dev docker stop reset clean-data retention replay replay-fast binance onchain capture-onchain generate-synthetic replay-synthetic simulate compose-config net config-show
 
@@ -45,24 +45,24 @@ test:
 	@$(CONFIG_ENV) && uv --directory app run pytest
 
 mvp:
-	@$(CONFIG_ENV) && ./scripts/run_mvp.sh
+	@$(CONFIG_ENV) && ./scripts/dev/run_mvp.sh
 
 dev:
-	@$(CONFIG_ENV) && ./scripts/start_dev_stack.sh
+	@$(CONFIG_ENV) && ./scripts/dev/start_dev_stack.sh
 
 docker: dev
 
 stop:
-	@$(CONFIG_ENV) && ./scripts/stop_stack.sh
+	@$(CONFIG_ENV) && ./scripts/dev/stop_stack.sh
 
 reset:
-	@$(CONFIG_ENV) && ./scripts/reset_stack.sh
+	@$(CONFIG_ENV) && ./scripts/dev/reset_stack.sh
 
 clean-data:
-	@$(CONFIG_ENV) && ./scripts/reset_dev_data.sh
+	@$(CONFIG_ENV) && ./scripts/dev/reset_dev_data.sh
 
 retention:
-	@$(CONFIG_ENV) && ./scripts/apply_topic_retention.sh "$${RETENTION_MS:-$$DEV_TOPIC_RETENTION_MS}"
+	@$(CONFIG_ENV) && ./scripts/infra/apply_topic_retention.sh "$${RETENTION_MS:-$$DEV_TOPIC_RETENTION_MS}"
 
 replay:
 	@$(CONFIG_ENV) && uv --directory app run replay-market --shift-to-now
@@ -92,7 +92,7 @@ compose-config:
 	@$(CONFIG_ENV) && docker compose config
 
 net:
-	@$(CONFIG_ENV) && . ./scripts/port_state.sh && load_saved_ports && \
+	@$(CONFIG_ENV) && . ./scripts/lib/port_state.sh && load_saved_ports && \
 	echo "UI Interfaces:" && \
 	echo "  Grafana:               http://127.0.0.1:$${HOST_GRAFANA_PORT}" && \
 	echo "  Redpanda Console:      http://127.0.0.1:$${HOST_CONSOLE_PORT}" && \

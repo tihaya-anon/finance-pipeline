@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
-. "$ROOT_DIR/scripts/port_state.sh"
+. "$ROOT_DIR/scripts/lib/port_state.sh"
 
 mkdir -p artifacts
 SERVICE_PID_FILE="$ROOT_DIR/artifacts/service-pids.env"
@@ -33,15 +33,15 @@ save_runtime_ports
 
 uv --directory app sync --group dev
 docker compose up -d --build redpanda redpanda-console questdb grafana jobmanager taskmanager
-./scripts/wait_for_infra.sh
-./scripts/wait_for_questdb.sh
-./scripts/init_questdb_schema.sh
-./scripts/create_topics.sh
+./scripts/infra/wait_for_infra.sh
+./scripts/infra/wait_for_questdb.sh
+./scripts/infra/init_questdb_schema.sh
+./scripts/infra/create_topics.sh
 
 docker compose exec -T jobmanager /bin/bash -lc "/opt/flink/bin/sql-client.sh -f /opt/flink/sql/market_features.sql" \
   > artifacts/flink-submit.log 2>&1 || true
 
-./scripts/apply_topic_retention.sh "${DEV_TOPIC_RETENTION_MS}"
+./scripts/infra/apply_topic_retention.sh "${DEV_TOPIC_RETENTION_MS}"
 
 pkill -f "uv --directory app run strategy-service --max-messages 0" >/dev/null 2>&1 || true
 pkill -f "uv --directory app run portfolio-service --max-messages 0" >/dev/null 2>&1 || true

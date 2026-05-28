@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
-. "$ROOT_DIR/scripts/port_state.sh"
+. "$ROOT_DIR/scripts/lib/port_state.sh"
 load_saved_ports
 
 QUESTDB_HTTP_PORT="${HOST_QUESTDB_HTTP_PORT:-9000}"
